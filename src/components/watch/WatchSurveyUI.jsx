@@ -54,197 +54,207 @@ export default function WatchSurveyUI({ onBack }) {
   };
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-between p-6 sm:p-7 text-slate-100 font-sans select-none relative overflow-y-auto no-scrollbar">
+    <div className="w-full h-full flex flex-col items-center justify-center p-3 select-none relative text-slate-100 font-sans overflow-hidden">
       
-      {/* Top Header with Back button */}
-      <div className="w-full flex items-center justify-between border-b border-slate-700/80 pb-2.5 z-10">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1 text-xs text-cyan-400 font-mono font-bold hover:text-cyan-300 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/60"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          <span>HUD</span>
-        </button>
-        <span className="text-[11px] font-mono tracking-widest text-cyan-300 font-extrabold uppercase flex items-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-          <span>ASTRONAUT TASK UI</span>
-        </span>
+      {/* Circular Safe Inset Container */}
+      <div className="w-[82%] h-[86%] flex flex-col items-center justify-between z-10 py-1">
+        
+        {/* Top Header Row (Constrained Width for Curve) */}
+        <div className="w-[82%] flex items-center justify-between border-b border-slate-700/80 pb-1.5 pt-0.5">
+          <button
+            onClick={onBack}
+            className="flex items-center gap-1 text-[11px] text-cyan-400 font-mono font-bold hover:text-cyan-300 bg-slate-900/90 px-2.5 py-0.5 rounded-lg border border-slate-700/70"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+            <span>HUD</span>
+          </button>
+          <span className="text-[10px] font-mono tracking-wider text-cyan-300 font-extrabold uppercase flex items-center gap-1">
+            <ShieldCheck className="w-3 h-3 text-cyan-400" />
+            <span>TASK UI</span>
+          </span>
+        </div>
+
+        {submitted ? (
+          <div className="w-[90%] flex flex-col items-center justify-center my-auto text-center p-4 bg-slate-900/95 rounded-2xl border border-emerald-500/50 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mb-2 shadow-[0_0_18px_rgba(16,185,129,0.5)]">
+              <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+            </div>
+            <div className="font-extrabold text-xs text-emerald-300 font-mono tracking-wide">
+              BEHAVIORAL RECORD STAMPED
+            </div>
+            <div className="text-[10px] text-slate-300 font-mono mt-1">
+              HR {activeAstronaut.current.hr} BPM • HRV {activeAstronaut.current.hrv} ms
+            </div>
+            <div className="text-[9px] text-cyan-300 font-mono mt-1 bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-500/30">
+              Cached to Offline Storage
+            </div>
+          </div>
+        ) : (
+          <div className="w-[94%] flex flex-col justify-between my-auto py-1 space-y-2.5">
+            
+            {/* Survey Type Switcher */}
+            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-900/95 rounded-xl border border-slate-700/80">
+              <button
+                onClick={() => setActiveSurveyType('SLEEP_QUALITY')}
+                className={`flex items-center justify-center gap-1 py-1 rounded-lg text-[10px] font-mono font-bold transition-all ${
+                  activeSurveyType === 'SLEEP_QUALITY'
+                    ? 'bg-sky-500 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Moon className="w-3 h-3" />
+                <span>Sleep Check</span>
+              </button>
+              <button
+                onClick={() => setActiveSurveyType('POMS_PSYCHOLOGICAL')}
+                className={`flex items-center justify-center gap-1 py-1 rounded-lg text-[10px] font-mono font-bold transition-all ${
+                  activeSurveyType === 'POMS_PSYCHOLOGICAL'
+                    ? 'bg-cyan-500 text-black shadow-sm font-extrabold'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Brain className="w-3 h-3" />
+                <span>Mood / Stress</span>
+              </button>
+            </div>
+
+            {/* Questions Form with Proper Breathing Space */}
+            <form onSubmit={handleSubmit} className="space-y-2 text-xs">
+              {activeSurveyType === 'SLEEP_QUALITY' ? (
+                <>
+                  <div className="flex items-center justify-between bg-slate-900/85 px-2.5 py-1.5 rounded-xl border border-slate-800">
+                    <span className="text-slate-300 text-[11px] font-medium">Quality (1-5):</span>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map(val => (
+                        <button
+                          type="button"
+                          key={val}
+                          onClick={() => setSleepQuality(val)}
+                          className={`w-5 h-5 rounded-md font-mono text-[10px] font-extrabold transition-transform active:scale-90 ${
+                            sleepQuality === val ? 'bg-cyan-400 text-black shadow-[0_0_6px_#00F0FF]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-slate-900/85 px-2.5 py-1.5 rounded-xl border border-slate-800">
+                    <span className="text-slate-300 text-[11px] font-medium">Latency:</span>
+                    <div className="flex items-center gap-1.5 font-mono text-xs">
+                      <input
+                        type="range"
+                        min="5"
+                        max="60"
+                        step="5"
+                        value={sleepLatency}
+                        onChange={(e) => setSleepLatency(e.target.value)}
+                        className="w-16 accent-cyan-400 h-1 bg-slate-800 rounded-lg cursor-pointer"
+                      />
+                      <span className="text-cyan-300 font-bold text-[11px] w-8 text-right">{sleepLatency}m</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-slate-900/85 px-2.5 py-1.5 rounded-xl border border-slate-800">
+                    <span className="text-slate-300 text-[11px] font-medium">Awakenings:</span>
+                    <div className="flex gap-1 font-mono text-xs">
+                      {[0, 1, 2, 3, 4].map(val => (
+                        <button
+                          type="button"
+                          key={val}
+                          onClick={() => setAwakenings(val)}
+                          className={`w-5 h-5 rounded-md text-[10px] font-extrabold transition-transform active:scale-90 ${
+                            awakenings === val ? 'bg-indigo-400 text-black shadow-[0_0_6px_#818CF8]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between bg-slate-900/85 px-2.5 py-1.5 rounded-xl border border-slate-800">
+                    <span className="text-slate-300 text-[11px] font-medium">Focus:</span>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map(val => (
+                        <button
+                          type="button"
+                          key={val}
+                          onClick={() => setFocusScore(val)}
+                          className={`w-5 h-5 rounded-md font-mono text-[10px] font-extrabold transition-transform active:scale-90 ${
+                            focusScore === val ? 'bg-cyan-400 text-black shadow-[0_0_6px_#00F0FF]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-slate-900/85 px-2.5 py-1.5 rounded-xl border border-slate-800">
+                    <span className="text-slate-300 text-[11px] font-medium">Fatigue:</span>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map(val => (
+                        <button
+                          type="button"
+                          key={val}
+                          onClick={() => setFatigueScore(val)}
+                          className={`w-5 h-5 rounded-md font-mono text-[10px] font-extrabold transition-transform active:scale-90 ${
+                            fatigueScore === val ? 'bg-amber-400 text-black shadow-[0_0_6px_#F59E0B]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between bg-slate-900/85 px-2.5 py-1.5 rounded-xl border border-slate-800">
+                    <span className="text-slate-300 text-[11px] font-medium">Stress:</span>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map(val => (
+                        <button
+                          type="button"
+                          key={val}
+                          onClick={() => setStressScore(val)}
+                          className={`w-5 h-5 rounded-md font-mono text-[10px] font-extrabold transition-transform active:scale-90 ${
+                            stressScore === val ? 'bg-rose-500 text-white shadow-[0_0_6px_#F43F5E]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                          }`}
+                        >
+                          {val}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Submit Button (Centered, with safe margins) */}
+              <div className="pt-1">
+                <button
+                  type="submit"
+                  className="w-full py-1.5 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 hover:from-cyan-300 hover:to-sky-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(0,240,255,0.35)] active:scale-95 transition-all"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Record & Stamp</span>
+                </button>
+              </div>
+            </form>
+
+          </div>
+        )}
+
+        {/* Bottom Protocol Note (Constrained Width) */}
+        <div className="text-[9px] text-slate-400 font-mono flex items-center gap-1 pt-0.5 pb-0.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+          <span>LSDA & LSAH Dual Protocol</span>
+        </div>
+
       </div>
 
-      {submitted ? (
-        <div className="flex flex-col items-center justify-center my-auto text-center z-10 animate-fade-in p-4 bg-slate-900/90 rounded-2xl border border-emerald-500/50 shadow-2xl">
-          <div className="w-14 h-14 rounded-full bg-emerald-500/20 border-2 border-emerald-400 flex items-center justify-center mb-2 shadow-[0_0_20px_rgba(16,185,129,0.5)]">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400" />
-          </div>
-          <div className="font-extrabold text-sm text-emerald-300 font-mono tracking-wide">
-            BEHAVIORAL RECORD STAMPED
-          </div>
-          <div className="text-[11px] text-slate-300 font-mono mt-1.5">
-            Synchronized with live HR {activeAstronaut.current.hr} BPM & HRV {activeAstronaut.current.hrv} ms
-          </div>
-          <div className="text-[10px] text-cyan-300 font-mono mt-1 bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
-            Cached to Monkey C Offline Storage
-          </div>
-        </div>
-      ) : (
-        <div className="w-full flex flex-col justify-between my-auto py-1 z-10 space-y-2.5">
-          
-          {/* Survey Type Switcher */}
-          <div className="grid grid-cols-2 gap-2 p-1 bg-slate-900/90 rounded-xl border border-slate-700/80">
-            <button
-              onClick={() => setActiveSurveyType('SLEEP_QUALITY')}
-              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-all ${
-                activeSurveyType === 'SLEEP_QUALITY'
-                  ? 'bg-sky-500 text-white shadow-md shadow-sky-500/30'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Moon className="w-3.5 h-3.5" />
-              <span>Sleep Check</span>
-            </button>
-            <button
-              onClick={() => setActiveSurveyType('POMS_PSYCHOLOGICAL')}
-              className={`flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-[11px] font-mono font-bold transition-all ${
-                activeSurveyType === 'POMS_PSYCHOLOGICAL'
-                  ? 'bg-cyan-500 text-black shadow-md shadow-cyan-500/30 font-extrabold'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Brain className="w-3.5 h-3.5" />
-              <span>Mood / Stress</span>
-            </button>
-          </div>
-
-          {/* Form Content */}
-          <form onSubmit={handleSubmit} className="space-y-2 text-xs">
-            {activeSurveyType === 'SLEEP_QUALITY' ? (
-              <>
-                <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                  <span className="text-slate-300 font-medium">Sleep Quality:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(val => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => setSleepQuality(val)}
-                        className={`w-6 h-6 rounded-md font-mono text-[11px] font-extrabold transition-transform active:scale-90 ${
-                          sleepQuality === val ? 'bg-cyan-400 text-black shadow-[0_0_8px_#00F0FF]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                  <span className="text-slate-300 font-medium">Sleep Latency:</span>
-                  <div className="flex items-center gap-2 font-mono text-xs">
-                    <input
-                      type="range"
-                      min="5"
-                      max="60"
-                      step="5"
-                      value={sleepLatency}
-                      onChange={(e) => setSleepLatency(e.target.value)}
-                      className="w-20 accent-cyan-400 h-1.5 bg-slate-800 rounded-lg cursor-pointer"
-                    />
-                    <span className="text-cyan-300 font-bold w-9 text-right">{sleepLatency}m</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                  <span className="text-slate-300 font-medium">Night Awakenings:</span>
-                  <div className="flex gap-1.5 font-mono text-xs">
-                    {[0, 1, 2, 3, 4].map(val => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => setAwakenings(val)}
-                        className={`w-6 h-6 rounded-md font-extrabold transition-transform active:scale-90 ${
-                          awakenings === val ? 'bg-indigo-400 text-black shadow-[0_0_8px_#818CF8]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                  <span className="text-slate-300 font-medium">Cognitive Focus:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(val => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => setFocusScore(val)}
-                        className={`w-6 h-6 rounded-md font-mono text-[11px] font-extrabold transition-transform active:scale-90 ${
-                          focusScore === val ? 'bg-cyan-400 text-black shadow-[0_0_8px_#00F0FF]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                  <span className="text-slate-300 font-medium">Physical Fatigue:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(val => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => setFatigueScore(val)}
-                        className={`w-6 h-6 rounded-md font-mono text-[11px] font-extrabold transition-transform active:scale-90 ${
-                          fatigueScore === val ? 'bg-amber-400 text-black shadow-[0_0_8px_#F59E0B]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-                  <span className="text-slate-300 font-medium">Stress & Anxiety:</span>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map(val => (
-                      <button
-                        type="button"
-                        key={val}
-                        onClick={() => setStressScore(val)}
-                        className={`w-6 h-6 rounded-md font-mono text-[11px] font-extrabold transition-transform active:scale-90 ${
-                          stressScore === val ? 'bg-rose-500 text-white shadow-[0_0_8px_#F43F5E]' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-                        }`}
-                      >
-                        {val}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </>
-            )}
-
-            <button
-              type="submit"
-              className="w-full py-2 mt-1 rounded-xl bg-gradient-to-r from-cyan-400 to-sky-500 hover:from-cyan-300 hover:to-sky-400 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(0,240,255,0.4)] active:scale-95 transition-all"
-            >
-              <Send className="w-3.5 h-3.5" />
-              <span>Record & Stamp on Watch</span>
-            </button>
-          </form>
-
-        </div>
-      )}
-
-      <div className="text-[10px] text-slate-400 font-mono z-10 flex items-center gap-1.5">
-        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-        <span>Autonomous Sync: LSDA & LSAH Protocol</span>
-      </div>
     </div>
   );
 }
