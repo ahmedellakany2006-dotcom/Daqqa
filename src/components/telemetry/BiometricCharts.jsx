@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useMission } from '../../context/MissionContext';
-import { LineChart, Heart, Wind, Activity, Zap } from 'lucide-react';
+import { LineChart, Heart, Wind, Activity, Zap, Compass } from 'lucide-react';
 
 export default function BiometricCharts() {
   const { telemetryLogs, activeAstronautId, activeAstronaut } = useMission();
@@ -9,7 +9,7 @@ export default function BiometricCharts() {
 
   // SVG Chart Helper
   const renderSparkline = (dataKey, strokeColor, label, unit, minVal, maxVal, thresholdLine) => {
-    const values = recentLogs.map(l => l[dataKey]);
+    const values = recentLogs.map(l => l[dataKey] ?? (dataKey === 'activityMets' ? 1.8 : 0));
     if (!values.length) return null;
 
     const currentVal = values[values.length - 1];
@@ -17,7 +17,7 @@ export default function BiometricCharts() {
     const dataMax = Math.max(...values);
     const computedMin = minVal !== undefined ? minVal : Math.floor(dataMin * 0.95);
     const computedMax = maxVal !== undefined ? maxVal : Math.ceil(dataMax * 1.05);
-    const range = Math.max(1, computedMax - computedMin);
+    const range = Math.max(0.1, computedMax - computedMin);
 
     const width = 360;
     const height = 90;
@@ -108,17 +108,22 @@ export default function BiometricCharts() {
             <LineChart className="w-4 h-4" />
           </div>
           <h2 className="text-sm font-bold tracking-wide text-slate-800 uppercase font-mono">
-            Continuous Physiological Telemetry Channels
+            Synchronous Multi-Channel Physiological Telemetry
           </h2>
         </div>
-        <div className="text-xs text-slate-500 font-mono">
-          Sampling Rate: <span className="text-sky-700 font-bold">1 Hz</span> (Garmin Elevate SDK)
+        <div className="text-xs text-slate-500 font-mono flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">
+            1 Hz Co-Registered Dual Stream
+          </span>
+          <span>(Garmin Elevate Gen 5 SDK)</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {renderSparkline('hr', '#0284C7', 'Heart Rate (PPG)', 'BPM', 40, 180, 150)}
         {renderSparkline('spo2', '#059669', 'Pulse Oximetry (SpO2)', '%', 80, 100, 90)}
+        {renderSparkline('activityMets', '#4F46E5', 'Activity Workload', 'METs', 1.0, 9.0, 7.5)}
+        {renderSparkline('cosi', '#0EA5E9', 'Cardio-Oxygen Ratio (COSI)', 'ratio', 0.5, 2.5, 1.0)}
         {renderSparkline('hrv', '#D97706', 'Heart Rate Variability', 'ms', 10, 100, 20)}
         {renderSparkline('stress', '#7C3AED', 'Autonomic Stress Index', 'pts', 0, 100, 75)}
       </div>

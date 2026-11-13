@@ -61,26 +61,26 @@ export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage
       {/* ============================================================== */}
       <div className="w-[84%] h-[86%] flex flex-col items-center justify-between z-20 py-1">
         
-        {/* 1. TOP ROW: Comm, SQI Reliability, Battery */}
-        <div className="w-[82%] flex items-center justify-between text-xs pt-1">
+        {/* 1. TOP ROW: Comm, Synchronous Sync / SQI, Activity METs */}
+        <div className="w-[86%] flex items-center justify-between text-xs pt-0.5">
           {/* Comm Status Pill */}
           <div className="flex items-center gap-1.5 bg-slate-900/90 px-2 py-0.5 rounded-full border border-slate-700/80 shadow-xs">
-            <div className={`w-2 h-2 rounded-full ${isCommBlackout ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
-            <span className={`text-[10px] font-extrabold ${isCommBlackout ? 'text-amber-400' : 'text-emerald-400'}`}>
+            <div className={`w-1.5 h-1.5 rounded-full ${isCommBlackout ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+            <span className={`text-[9px] font-extrabold ${isCommBlackout ? 'text-amber-400' : 'text-emerald-400'}`}>
               {isCommBlackout ? 'LOS' : 'AOS'}
             </span>
           </div>
 
-          {/* Feature 2: SQI Reliability Indicator on Watch Face */}
-          <div className="text-[10px] text-emerald-400 font-bold tracking-wider bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span>SQI {sqiVal}%</span>
+          {/* Synchronous HR+SpO2 & SQI Badge */}
+          <div className="text-[9px] text-cyan-300 font-bold tracking-wider bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-500/40 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span>SYNC {sqiVal}%</span>
           </div>
 
-          {/* Battery */}
-          <div className="flex items-center gap-1 bg-slate-900/90 px-2 py-0.5 rounded-full border border-slate-700/80 text-slate-300 text-[10px] font-bold shadow-xs">
-            <Battery className="w-3.5 h-3.5 text-emerald-400" />
-            <span>84%</span>
+          {/* Feature 3: Activity Level (METs) on Watch Face */}
+          <div className="flex items-center gap-1 bg-slate-900/90 px-2 py-0.5 rounded-full border border-slate-700/80 text-amber-300 text-[9px] font-bold shadow-xs">
+            <Activity className="w-3 h-3 text-amber-400" />
+            <span>{metrics.activityMets ?? 1.8}M</span>
           </div>
         </div>
 

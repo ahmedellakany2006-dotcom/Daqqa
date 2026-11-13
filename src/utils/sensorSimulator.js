@@ -1,7 +1,10 @@
 /**
  * DAQQA Biometric Sensor Simulator
  * Simulates microgravity physiological dynamics as recorded by Garmin Elevate PPG & Pulse Ox sensors
+ * Synchronous dual-stream telemetry: HR and SpO2 co-registered at the exact same moment.
  */
+
+import { evaluateHRActivityConcordance, getActivityCategory } from './hrActivityAnalytics';
 
 export const INITIAL_CREW = [
   {
@@ -15,11 +18,26 @@ export const INITIAL_CREW = [
     cabinO2: 20.9,
     baseHR: 62,
     baseHRV: 68,
-    baseSpO2: 98,
+    baseSpO2: 98.4,
+    restingHR: 62,
     current: {
       hr: 64,
       hrv: 66,
       spo2: 98.4,
+      cosi: 1.54,
+      activityCategory: "LIGHT_IVA",
+      activityLevel: "Light Intravehicular",
+      activityMets: 1.8,
+      activityIntensity: 22,
+      accelMagnitude: 1.04,
+      restingHRBaseline: 62,
+      restingHRCurrent: 62,
+      hrDeltaResting: 2,
+      expectedHR: 65,
+      exertionStrainRatio: 1.0,
+      concordanceStatus: "CONCORDANT",
+      concordanceDiagnosis: "Optimal cardiorespiratory concordance.",
+      concordanceSeverity: "normal",
       stress: 22,
       fatigue: 14,
       skinTemp: 36.6,
@@ -40,9 +58,25 @@ export const INITIAL_CREW = [
     baseHR: 70,
     baseHRV: 55,
     baseSpO2: 97.5,
+    restingHR: 70,
     current: {
       hr: 72,
       hrv: 52,
+      spo2: 97.6,
+      cosi: 1.36,
+      activityCategory: "LIGHT_IVA",
+      activityLevel: "Light Intravehicular",
+      activityMets: 2.1,
+      activityIntensity: 25,
+      accelMagnitude: 1.08,
+      restingHRBaseline: 70,
+      restingHRCurrent: 70,
+      hrDeltaResting: 2,
+      expectedHR: 73,
+      exertionStrainRatio: 1.0,
+      concordanceStatus: "CONCORDANT",
+      concordanceDiagnosis: "Optimal cardiorespiratory concordance.",
+      concordanceSeverity: "normal",
       stress: 34,
       fatigue: 28,
       skinTemp: 36.8,
@@ -63,9 +97,25 @@ export const INITIAL_CREW = [
     baseHR: 58,
     baseHRV: 74,
     baseSpO2: 99.0,
+    restingHR: 58,
     current: {
       hr: 60,
       hrv: 71,
+      spo2: 99.1,
+      cosi: 1.65,
+      activityCategory: "LIGHT_IVA",
+      activityLevel: "Light Intravehicular",
+      activityMets: 1.7,
+      activityIntensity: 20,
+      accelMagnitude: 1.02,
+      restingHRBaseline: 58,
+      restingHRCurrent: 58,
+      hrDeltaResting: 2,
+      expectedHR: 61,
+      exertionStrainRatio: 1.0,
+      concordanceStatus: "CONCORDANT",
+      concordanceDiagnosis: "Optimal cardiorespiratory concordance.",
+      concordanceSeverity: "normal",
       stress: 19,
       fatigue: 18,
       skinTemp: 36.4,
@@ -86,9 +136,25 @@ export const INITIAL_CREW = [
     baseHR: 66,
     baseHRV: 62,
     baseSpO2: 98.0,
+    restingHR: 66,
     current: {
       hr: 68,
       hrv: 59,
+      spo2: 98.2,
+      cosi: 1.44,
+      activityCategory: "LIGHT_IVA",
+      activityLevel: "Light Intravehicular",
+      activityMets: 1.9,
+      activityIntensity: 23,
+      accelMagnitude: 1.05,
+      restingHRBaseline: 66,
+      restingHRCurrent: 66,
+      hrDeltaResting: 2,
+      expectedHR: 69,
+      exertionStrainRatio: 1.0,
+      concordanceStatus: "CONCORDANT",
+      concordanceDiagnosis: "Optimal cardiorespiratory concordance.",
+      concordanceSeverity: "normal",
       stress: 28,
       fatigue: 22,
       skinTemp: 36.7,
@@ -107,6 +173,7 @@ export const MISSION_SCENARIOS = {
     hrDelta: 0,
     hrvFactor: 1.0,
     spo2Target: 98.5,
+    baseMets: 1.8,
     stressTarget: 24,
     fatigueTarget: 18,
     isBlackout: false,
@@ -116,9 +183,10 @@ export const MISSION_SCENARIOS = {
     id: "EVA",
     title: "High-Exertion EVA (Spacewalk)",
     description: "Extravehicular activity outside ISS / Lunar Gateway. Elevated workload, physical strain and muscle fatigue.",
-    hrDelta: 48,
+    hrDelta: 52,
     hrvFactor: 0.55,
     spo2Target: 95.5,
+    baseMets: 7.4,
     stressTarget: 68,
     fatigueTarget: 76,
     isBlackout: false,
@@ -131,6 +199,7 @@ export const MISSION_SCENARIOS = {
     hrDelta: 6,
     hrvFactor: 0.85,
     spo2Target: 97.8,
+    baseMets: 2.1,
     stressTarget: 46,
     fatigueTarget: 32,
     isBlackout: true,
@@ -140,9 +209,10 @@ export const MISSION_SCENARIOS = {
     id: "HYPOXIA",
     title: "Acute Hypoxia / Micro-Decompression",
     description: "Suit or airlock oxygen drop triggering critical SpO2 plunge below 90% and compensatory tachycardia. Instant on-wrist alarm.",
-    hrDelta: 65,
+    hrDelta: 68,
     hrvFactor: 0.28,
     spo2Target: 86.5,
+    baseMets: 1.1, // Key spaceflight paradox: sedentary astronaut with critical tachycardia!
     stressTarget: 94,
     fatigueTarget: 65,
     isBlackout: false,
@@ -155,6 +225,7 @@ export const MISSION_SCENARIOS = {
     hrDelta: 16,
     hrvFactor: 0.45,
     spo2Target: 96.0,
+    baseMets: 2.3,
     stressTarget: 82,
     fatigueTarget: 89,
     isBlackout: false,
@@ -164,8 +235,9 @@ export const MISSION_SCENARIOS = {
 
 /**
  * Generate next physiological tick
+ * Ensures strict synchronous pairing between Heart Rate (PPG) and SpO2 (Pulse Ox)
  */
-export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout) {
+export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout, manualMetsOverride = null) {
   const scen = MISSION_SCENARIOS[scenario] || MISSION_SCENARIOS.NOMINAL;
   
   // Random jitter
@@ -180,12 +252,24 @@ export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout)
   const targetStress = Math.min(100, Math.max(5, scen.stressTarget + (Math.random() - 0.5) * 6));
   const targetFatigue = Math.min(100, Math.max(5, scen.fatigueTarget + (Math.random() - 0.5) * 4));
 
+  // Activity METs calculation (support manual test override or scenario default)
+  const targetMets = manualMetsOverride !== null ? manualMetsOverride : scen.baseMets + (Math.random() - 0.5) * 0.25;
+  const currentMets = Number((prevMetrics.activityMets + (targetMets - prevMetrics.activityMets) * 0.2).toFixed(2));
+  const activityCategory = getActivityCategory(currentMets);
+  const currentIntensity = Math.round(Math.min(100, Math.max(5, ((currentMets - 1.0) / 7.5) * 100)));
+
+  // Microgravity accelerometer vector magnitude (g-force)
+  const accelMagnitude = Number((0.98 + (currentMets / 9.0) * 1.2 + (Math.random() - 0.5) * 0.08).toFixed(2));
+
   // Smooth lerp
   const currentHR = Math.round(prevMetrics.hr + (targetHR - prevMetrics.hr) * 0.25);
   const currentHRV = Math.round(prevMetrics.hrv + (targetHRV - prevMetrics.hrv) * 0.2);
   const currentSpO2 = Number((prevMetrics.spo2 + (targetSpO2 - prevMetrics.spo2) * 0.2).toFixed(1));
   const currentStress = Math.round(prevMetrics.stress + (targetStress - prevMetrics.stress) * 0.2);
   const currentFatigue = Math.round(prevMetrics.fatigue + (targetFatigue - prevMetrics.fatigue) * 0.15);
+
+  // Evaluate Cardiorespiratory Concordance (HR vs Activity)
+  const concordance = evaluateHRActivityConcordance(currentHR, astronaut.baseHR, currentMets, currentSpO2);
 
   // Status computation
   let status = "NOMINAL";
@@ -195,6 +279,10 @@ export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout)
   if (currentSpO2 < 90) {
     status = "CRITICAL HYPOXIA";
     alertMessage = "CRITICAL: SpO2 DROP DETECTED (" + currentSpO2 + "%). CHECK O2 SUPPLY!";
+    isAlert = true;
+  } else if (concordance.concordanceStatus === "INAPPROPRIATE_TACHYCARDIA_UNCOUPLED") {
+    status = "UNCOUPLED TACHYCARDIA";
+    alertMessage = "WARNING: INAPPROPRIATE TACHYCARDIA AT REST (" + currentHR + " BPM @ " + currentMets + " METs).";
     isAlert = true;
   } else if (currentHR > 145) {
     status = "TACHYCARDIA / HIGH STRAIN";
@@ -208,16 +296,38 @@ export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout)
     status = "HIGH FATIGUE";
   }
 
-  // Respiration rate correlates with HR
-  const respiration = Math.round(12 + (currentHR - 60) * 0.15);
-  const skinTemp = Number((36.5 + (currentStress > 60 ? 0.6 : 0) + (Math.random() - 0.5) * 0.2).toFixed(1));
+  // Respiration rate correlates with HR and activity
+  const respiration = Math.round(12 + (currentHR - 60) * 0.12 + (currentMets - 1.0) * 1.8);
+  const skinTemp = Number((36.5 + (currentStress > 60 || currentMets > 5.0 ? 0.7 : 0) + (Math.random() - 0.5) * 0.2).toFixed(1));
+
+  // Common identical timestamp for synchronous co-registration
+  const nowIso = new Date().toISOString();
+  const epoch = Date.now();
 
   return {
-    timestamp: new Date().toISOString(),
-    epoch: Date.now(),
+    timestamp: nowIso,
+    syncTimestamp: nowIso,
+    epoch,
+    // Synchronous primary vitals
     hr: currentHR,
-    hrv: currentHRV,
     spo2: currentSpO2,
+    cosi: concordance.cosi,
+    // Activity level metrics
+    activityCategory: activityCategory.id,
+    activityLevel: activityCategory.label,
+    activityMets: currentMets,
+    activityIntensity: currentIntensity,
+    accelMagnitude,
+    // Resting HR & Exertion dynamics
+    restingHRBaseline: astronaut.baseHR,
+    hrDeltaResting: currentHR - astronaut.baseHR,
+    expectedHR: concordance.expectedHR,
+    exertionStrainRatio: concordance.exertionStrainRatio,
+    concordanceStatus: concordance.concordanceStatus,
+    concordanceDiagnosis: concordance.clinicalDiagnosis,
+    concordanceSeverity: concordance.severity,
+    // General vitals
+    hrv: currentHRV,
     stress: currentStress,
     fatigue: currentFatigue,
     skinTemp,

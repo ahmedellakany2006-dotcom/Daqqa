@@ -4,7 +4,7 @@ import { evaluatePersonalizedAnomaly } from '../utils/personalizedAnomaly';
 import { evaluateSensorReliability } from '../utils/sensorReliability';
 import { computeMultimodalRisk } from '../utils/multimodalRisk';
 import { computePredictiveTrendForecast } from '../utils/predictiveForecasting';
-import { exportDashboardTelemetryToCsv, downloadCsvFile } from '../utils/dashboardCsvExporter';
+import { exportDashboardTelemetryToCsv, exportHRActivityAnalysisCsv, downloadCsvFile } from '../utils/dashboardCsvExporter';
 
 const MissionContext = createContext();
 
@@ -16,6 +16,7 @@ export function MissionProvider({ children }) {
   const [isBurstSyncing, setIsBurstSyncing] = useState(false);
   const [activeWristAlert, setActiveWristAlert] = useState(null);
   const [simulateLowContact, setSimulateLowContact] = useState(false);
+  const [manualMetsOverride, setManualMetsOverride] = useState(null);
   
   // Historical telemetry log per astronaut
   const [telemetryLogs, setTelemetryLogs] = useState(() => {
@@ -94,7 +95,8 @@ export function MissionProvider({ children }) {
           const lastTick = prevLog[prevLog.length - 1] || astro.current;
           
           const scen = (astro.id === activeAstronautId) ? activeScenario : "NOMINAL";
-          const newTick = generateSensorTick(astro, scen, lastTick, isCommBlackout);
+          const metsOverride = (astro.id === activeAstronautId) ? manualMetsOverride : null;
+          const newTick = generateSensorTick(astro, scen, lastTick, isCommBlackout, metsOverride);
 
           setTelemetryLogs(prevLogs => {
             const currentAstroLogs = prevLogs[astro.id] || [];
@@ -131,7 +133,7 @@ export function MissionProvider({ children }) {
     }, 1200);
 
     return () => clearInterval(timer);
-  }, [activeAstronautId, activeScenario, isCommBlackout, telemetryLogs, storageBuffers]);
+  }, [activeAstronautId, activeScenario, isCommBlackout, telemetryLogs, storageBuffers, manualMetsOverride]);
 
   // Derived Advanced Health Intelligence
   const personalizedAnomaly = evaluatePersonalizedAnomaly(activeAstronautId, activeAstronaut.current);
@@ -205,8 +207,16 @@ export function MissionProvider({ children }) {
     setActiveWristAlert(null);
   };
 
-  // One-click CSV Telemetry Exporter
-  const exportTelemetryCsv = () => {
+  // High-Precision Clean CSV Telemetry Exporter
+  const exportTelemetryCsv = (mode = "full") => {
+    if (mode === "hr-activity") {
+      const baseRHR = personalizedAnomaly?.baseline?.restingHR?.mean ?? activeAstronaut.baseHR ?? 62;
+      const csvData = exportHRActivityAnalysisCsv(activeAstronaut, activeLogs, baseRHR);
+      const filename = `DAQQA_HR_vs_Activity_${activeAstronaut.id}_FD${activeAstronaut.flightDay}.csv`;
+      downloadCsvFile(csvData, filename);
+      return filename;
+    }
+
     const csvData = exportDashboardTelemetryToCsv(
       activeAstronaut,
       activeLogs,
@@ -216,8 +226,9 @@ export function MissionProvider({ children }) {
       trendForecast,
       surveyHistory
     );
-    const filename = `DAQQA_Health_Telemetry_${activeAstronaut.id}_FD${activeAstronaut.flightDay}.csv`;
+    const filename = `DAQQA_Synchronous_Telemetry_${activeAstronaut.id}_FD${activeAstronaut.flightDay}.csv`;
     downloadCsvFile(csvData, filename);
+    return filename;
   };
 
   return (
@@ -246,6 +257,8 @@ export function MissionProvider({ children }) {
         trendForecast,
         simulateLowContact,
         toggleLowContactSimulation,
+        manualMetsOverride,
+        setManualMetsOverride,
         exportTelemetryCsv
       }}
     >
