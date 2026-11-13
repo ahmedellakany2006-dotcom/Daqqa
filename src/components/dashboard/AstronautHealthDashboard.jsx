@@ -5,10 +5,18 @@ import BaselineDeviationHUD from './BaselineDeviationHUD';
 import SensorReliabilityMonitor from './SensorReliabilityMonitor';
 import MultimodalRiskMatrix from './MultimodalRiskMatrix';
 import PredictiveTrendForecast from './PredictiveTrendForecast';
+import { openPrintableClinicalReport } from '../../utils/pdfReportGenerator';
 import { Download, Check, FileSpreadsheet, ShieldAlert, Sparkles, Activity, FileText, CheckCircle2 } from 'lucide-react';
 
 export default function AstronautHealthDashboard() {
-  const { activeAstronaut, exportTelemetryCsv } = useMission();
+  const { 
+    activeAstronaut, 
+    exportTelemetryCsv,
+    personalizedAnomaly,
+    sensorReliability,
+    multimodalRisk,
+    trendForecast
+  } = useMission();
   const [downloadFullSuccess, setDownloadFullSuccess] = useState(false);
   const [downloadActivitySuccess, setDownloadActivitySuccess] = useState(false);
 
@@ -49,23 +57,23 @@ export default function AstronautHealthDashboard() {
           </p>
         </div>
 
-        {/* Dual CSV Extraction Hub */}
+        {/* Extraction & PDF Export Hub */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* 1. Full Telemetry CSV */}
           <button
             onClick={handleFullCsvExport}
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+            className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
             title="Export complete 1Hz telemetry table with synchronous SpO2, HR, Activity, Baselines, and SQI"
           >
             {downloadFullSuccess ? (
               <>
                 <Check className="w-4 h-4 text-white" />
-                <span>Downloaded Full CSV!</span>
+                <span>Downloaded CSV!</span>
               </>
             ) : (
               <>
                 <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
-                <span>Extract Full Telemetry CSV</span>
+                <span>Full CSV</span>
               </>
             )}
           </button>
@@ -73,20 +81,41 @@ export default function AstronautHealthDashboard() {
           {/* 2. HR vs Activity Dedicated CSV */}
           <button
             onClick={handleActivityCsvExport}
-            className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-700 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-md active:scale-95 transition-all"
+            className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-slate-700 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
             title="Export specialized Cardiorespiratory HR vs Activity Exertion Concordance CSV"
           >
             {downloadActivitySuccess ? (
               <>
                 <Check className="w-4 h-4 text-emerald-400" />
-                <span className="text-emerald-300">Downloaded HR vs Activity!</span>
+                <span className="text-emerald-300">Downloaded!</span>
               </>
             ) : (
               <>
                 <Activity className="w-4 h-4 text-cyan-400" />
-                <span>HR vs Activity CSV</span>
+                <span>HR vs Act CSV</span>
               </>
             )}
+          </button>
+
+          {/* 3. Pre-Compiled NASA PDF Specification */}
+          <a
+            href="/DAQQA_NASA_Telemetry_Specification_and_Thresholds.pdf"
+            download="DAQQA_NASA_Telemetry_Specification_and_Thresholds.pdf"
+            className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all"
+            title="Download the official NASA Technical Specification & Thresholds PDF document"
+          >
+            <FileText className="w-4 h-4 text-rose-200" />
+            <span>PDF Spec</span>
+          </a>
+
+          {/* 4. Live Patient Clinical Dossier (PDF Print) */}
+          <button
+            onClick={() => openPrintableClinicalReport(activeAstronaut, personalizedAnomaly, sensorReliability, multimodalRisk, trendForecast)}
+            className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-sky-600/20 active:scale-95 transition-all"
+            title="Generate live Flight Surgeon Patient Clinical Dossier to save as PDF"
+          >
+            <Download className="w-4 h-4 text-sky-200" />
+            <span>Print Dossier (PDF)</span>
           </button>
         </div>
       </div>
