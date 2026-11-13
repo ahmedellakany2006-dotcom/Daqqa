@@ -15,7 +15,7 @@ export default function RealtimeECGCanvas() {
     let animationFrameId;
     let step = 0;
     const points = [];
-    const maxPoints = canvas.width || 600;
+    const maxPoints = canvas.width || 800;
 
     // Fill initial baseline
     for (let i = 0; i < maxPoints; i++) {
@@ -28,7 +28,6 @@ export default function RealtimeECGCanvas() {
       const midY = height / 2;
 
       // Calculate ECG cycle frequency based on HR
-      // 60 fps / (HR / 60) = frames per beat
       const beatPeriod = Math.max(20, Math.round(3600 / hr));
       const cyclePos = step % beatPeriod;
 
@@ -37,19 +36,19 @@ export default function RealtimeECGCanvas() {
       // Synthesize realistic P-Q-R-S-T cardiac waveform
       const p = cyclePos / beatPeriod;
       if (p > 0.15 && p < 0.22) {
-        // P-wave (atrial depolarization)
+        // P-wave
         sampleY -= Math.sin(((p - 0.15) / 0.07) * Math.PI) * 12;
       } else if (p >= 0.27 && p < 0.29) {
         // Q-dip
         sampleY += 8;
       } else if (p >= 0.29 && p < 0.33) {
-        // R-spike (ventricular depolarization)
+        // R-spike
         sampleY -= 55;
       } else if (p >= 0.33 && p < 0.36) {
         // S-dip
         sampleY += 18;
       } else if (p > 0.45 && p < 0.60) {
-        // T-wave (ventricular repolarization)
+        // T-wave
         sampleY -= Math.sin(((p - 0.45) / 0.15) * Math.PI) * 16;
       }
 
@@ -62,11 +61,11 @@ export default function RealtimeECGCanvas() {
       }
 
       // Draw background aerospace grid
-      ctx.fillStyle = '#070D18';
+      ctx.fillStyle = '#050A14';
       ctx.fillRect(0, 0, width, height);
 
       // Grid lines
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.07)';
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
       ctx.lineWidth = 1;
       const gridSize = 20;
 
@@ -125,30 +124,34 @@ export default function RealtimeECGCanvas() {
   }, [hr]);
 
   return (
-    <div className="bg-[#090F1C] border border-cyan-950/80 rounded-2xl p-4 shadow-xl relative overflow-hidden">
-      <div className="flex items-center justify-between mb-2">
+    <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-sm backdrop-blur-sm relative z-20">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4 text-cyan-400" />
-          <span className="font-mono text-xs font-bold text-cyan-300 tracking-wider uppercase">
+          <div className="p-1.5 rounded-lg bg-sky-100 text-sky-700">
+            <Activity className="w-4 h-4" />
+          </div>
+          <span className="font-mono text-xs sm:text-sm font-bold text-slate-800 tracking-wider uppercase">
             Lead II Optical PPG / Plethysmograph Waveform (Continuous)
           </span>
         </div>
-        <div className="font-mono text-xs text-slate-400 flex items-center gap-3">
-          <span>Speed: <strong className="text-slate-200">25 mm/s</strong></span>
-          <span>Gain: <strong className="text-slate-200">10 mm/mV</strong></span>
-          <span className="text-cyan-300 font-bold">{hr} BPM</span>
+        <div className="font-mono text-xs text-slate-500 flex items-center gap-3">
+          <span>Speed: <strong className="text-slate-800">25 mm/s</strong></span>
+          <span>Gain: <strong className="text-slate-800">10 mm/mV</strong></span>
+          <span className="text-sky-700 font-extrabold bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+            {hr} BPM
+          </span>
         </div>
       </div>
 
-      <div className="w-full h-32 rounded-xl overflow-hidden border border-cyan-900/40 relative">
+      <div className="w-full h-36 rounded-xl overflow-hidden border border-slate-300 relative shadow-inner">
         <canvas
           ref={canvasRef}
           width={800}
-          height={128}
+          height={144}
           className="w-full h-full block"
         />
-        <div className="absolute top-2 left-3 font-mono text-[10px] text-cyan-400/80 bg-black/50 px-2 py-0.5 rounded border border-cyan-500/20 pointer-events-none">
-          ELEVATE 5 PPG • REALTIME
+        <div className="absolute top-2 left-3 font-mono text-[10px] text-cyan-300 bg-black/60 px-2 py-0.5 rounded border border-cyan-500/30 pointer-events-none">
+          ELEVATE 5 PPG • REALTIME 60FPS
         </div>
       </div>
     </div>
