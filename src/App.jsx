@@ -13,10 +13,11 @@ import EnvironmentalHUD from './components/telemetry/EnvironmentalHUD';
 import DualExportHub from './components/export/DualExportHub';
 import CodeViewer from './components/monkeyc/CodeViewer';
 import ProjectBrief from './components/about/ProjectBrief';
-import { Activity, Watch, ShieldAlert, HeartHandshake, Rocket } from 'lucide-react';
+import AstronautHealthDashboard from './components/dashboard/AstronautHealthDashboard';
+import { Activity, Watch, ShieldAlert, HeartHandshake, Rocket, BrainCircuit } from 'lucide-react';
 
 function AppContent() {
-  const [activeTab, setActiveTab] = useState('simulator'); // 'simulator' | 'ground' | 'export' | 'code' | 'about'
+  const [activeTab, setActiveTab] = useState('simulator'); // 'simulator' | 'intelligence' | 'ground' | 'export' | 'code' | 'about'
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 aerospace-light-grid relative">
@@ -68,10 +69,13 @@ function AppContent() {
               <div className="flex items-center gap-2 pt-2">
                 <div className="h-0.5 flex-1 bg-slate-200" />
                 <span className="text-xs font-mono font-extrabold text-slate-500 uppercase tracking-widest px-3">
-                  Telemetry & Mission Control Telemetry Dashboard
+                  Astronaut Health Intelligence & Telemetry Dashboard
                 </span>
                 <div className="h-0.5 flex-1 bg-slate-200" />
               </div>
+
+              {/* 5 Core Features: Personalized Baselines, SQI, Multimodal Risk, Trend Forecast & CSV Export */}
+              <AstronautHealthDashboard />
 
               {/* 1. Real-time Lead II ECG Canvas */}
               <RealtimeECGCanvas />
@@ -93,7 +97,12 @@ function AppContent() {
           </div>
         )}
 
-        {/* Tab 2: Ground Station / Flight Surgeon HUD */}
+        {/* Tab 2: Dedicated Health Intelligence (Personalized AI & CSV Extraction) */}
+        {activeTab === 'intelligence' && (
+          <AstronautHealthDashboard />
+        )}
+
+        {/* Tab 3: Ground Station / Flight Surgeon HUD */}
         {activeTab === 'ground' && (
           <div className="space-y-6">
             <CrewRoster />

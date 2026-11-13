@@ -1,5 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { INITIAL_CREW, MISSION_SCENARIOS, generateSensorTick } from '../utils/sensorSimulator';
+import { evaluatePersonalizedAnomaly } from '../utils/personalizedAnomaly';
+import { evaluateSensorReliability } from '../utils/sensorReliability';
+import { computeMultimodalRisk } from '../utils/multimodalRisk';
+import { computePredictiveTrendForecast } from '../utils/predictiveForecasting';
+import { exportDashboardTelemetryToCsv, downloadCsvFile } from '../utils/dashboardCsvExporter';
 
 const MissionContext = createContext();
 
@@ -10,6 +15,7 @@ export function MissionProvider({ children }) {
   const [isCommBlackout, setIsCommBlackout] = useState(false);
   const [isBurstSyncing, setIsBurstSyncing] = useState(false);
   const [activeWristAlert, setActiveWristAlert] = useState(null);
+  const [simulateLowContact, setSimulateLowContact] = useState(false);
   
   // Historical telemetry log per astronaut
   const [telemetryLogs, setTelemetryLogs] = useState(() => {
@@ -77,6 +83,7 @@ export function MissionProvider({ children }) {
   ]);
 
   const activeAstronaut = crew.find(a => a.id === activeAstronautId) || crew[0];
+  const activeLogs = telemetryLogs[activeAstronautId] || [];
 
   // Continuous sensor loop (simulating 1Hz watch polling)
   useEffect(() => {
@@ -86,18 +93,15 @@ export function MissionProvider({ children }) {
           const prevLog = telemetryLogs[astro.id] || [];
           const lastTick = prevLog[prevLog.length - 1] || astro.current;
           
-          // If this is the active astronaut, use the active scenario; otherwise nominal slight variation
           const scen = (astro.id === activeAstronautId) ? activeScenario : "NOMINAL";
           const newTick = generateSensorTick(astro, scen, lastTick, isCommBlackout);
 
-          // Update telemetry log
           setTelemetryLogs(prevLogs => {
             const currentAstroLogs = prevLogs[astro.id] || [];
-            const updated = [...currentAstroLogs.slice(-45), newTick];
+            const updated = [...currentAstroLogs.slice(-50), newTick];
             return { ...prevLogs, [astro.id]: updated };
           });
 
-          // If comm blackout is active, increment Monkey C offline storage buffer
           if (isCommBlackout || MISSION_SCENARIOS[activeScenario]?.isBlackout) {
             setStorageBuffers(prev => ({
               ...prev,
@@ -105,7 +109,6 @@ export function MissionProvider({ children }) {
             }));
           }
 
-          // Trigger wrist alert on active astronaut if threshold breached
           if (astro.id === activeAstronautId && newTick.isAlert) {
             setActiveWristAlert({
               astronautName: astro.name,
@@ -130,6 +133,12 @@ export function MissionProvider({ children }) {
     return () => clearInterval(timer);
   }, [activeAstronautId, activeScenario, isCommBlackout, telemetryLogs, storageBuffers]);
 
+  // Derived Advanced Health Intelligence
+  const personalizedAnomaly = evaluatePersonalizedAnomaly(activeAstronautId, activeAstronaut.current);
+  const sensorReliability = evaluateSensorReliability(activeScenario, activeAstronaut.current, simulateLowContact);
+  const multimodalRisk = computeMultimodalRisk(personalizedAnomaly, sensorReliability, surveyHistory, activeAstronaut.current);
+  const trendForecast = computePredictiveTrendForecast(activeAstronaut, activeLogs, multimodalRisk, personalizedAnomaly);
+
   // Scenario switch handler
   const setScenario = (scenarioId) => {
     setActiveScenario(scenarioId);
@@ -144,12 +153,16 @@ export function MissionProvider({ children }) {
   // Toggle Loss of Signal (LOS) vs Acquisition of Signal (AOS)
   const toggleCommStatus = () => {
     if (isCommBlackout) {
-      // Re-establishing signal: trigger burst sync
       flushStorageBuffers();
       setIsCommBlackout(false);
     } else {
       setIsCommBlackout(true);
     }
+  };
+
+  // Toggle Low Contact / Poor Snugness Simulation
+  const toggleLowContactSimulation = () => {
+    setSimulateLowContact(prev => !prev);
   };
 
   // Flush offline storage buffers with high speed burst animation
@@ -168,8 +181,7 @@ export function MissionProvider({ children }) {
 
   // Submit on-watch behavioral survey
   const submitSurvey = (surveyData) => {
-    const activeLog = telemetryLogs[activeAstronautId] || [];
-    const lastTick = activeLog[activeLog.length - 1] || activeAstronaut.current;
+    const lastTick = activeLogs[activeLogs.length - 1] || activeAstronaut.current;
 
     const newRecord = {
       id: `SURV-${Date.now().toString().slice(-6)}`,
@@ -183,7 +195,6 @@ export function MissionProvider({ children }) {
 
     setSurveyHistory(prev => [newRecord, ...prev]);
 
-    // Also queue into offline buffer
     setStorageBuffers(prev => ({
       ...prev,
       [activeAstronautId]: (prev[activeAstronautId] || 0) + 1
@@ -192,6 +203,21 @@ export function MissionProvider({ children }) {
 
   const dismissWristAlert = () => {
     setActiveWristAlert(null);
+  };
+
+  // One-click CSV Telemetry Exporter
+  const exportTelemetryCsv = () => {
+    const csvData = exportDashboardTelemetryToCsv(
+      activeAstronaut,
+      activeLogs,
+      personalizedAnomaly,
+      sensorReliability,
+      multimodalRisk,
+      trendForecast,
+      surveyHistory
+    );
+    const filename = `DAQQA_Health_Telemetry_${activeAstronaut.id}_FD${activeAstronaut.flightDay}.csv`;
+    downloadCsvFile(csvData, filename);
   };
 
   return (
@@ -212,7 +238,15 @@ export function MissionProvider({ children }) {
         surveyHistory,
         submitSurvey,
         activeWristAlert,
-        dismissWristAlert
+        dismissWristAlert,
+        // Advanced Health Intelligence Features
+        personalizedAnomaly,
+        sensorReliability,
+        multimodalRisk,
+        trendForecast,
+        simulateLowContact,
+        toggleLowContactSimulation,
+        exportTelemetryCsv
       }}
     >
       {children}

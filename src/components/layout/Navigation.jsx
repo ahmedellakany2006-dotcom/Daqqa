@@ -1,5 +1,5 @@
 import React from 'react';
-import { Watch, Activity, Database, Code2, Info } from 'lucide-react';
+import { Watch, Activity, Database, Code2, Info, BrainCircuit } from 'lucide-react';
 
 export default function Navigation({ activeTab, setActiveTab }) {
   const tabs = [
@@ -8,6 +8,12 @@ export default function Navigation({ activeTab, setActiveTab }) {
       label: 'Garmin Wrist Unit',
       sub: 'Connect IQ Emulator & Surveys',
       icon: Watch
+    },
+    {
+      id: 'intelligence',
+      label: 'Health Intelligence',
+      sub: 'Personalized AI & CSV Export',
+      icon: BrainCircuit
     },
     {
       id: 'ground',

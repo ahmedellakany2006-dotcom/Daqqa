@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useMission } from '../../context/MissionContext';
-import { Heart, Activity, Wind, Battery, Radio, Shield, Zap, Sparkles } from 'lucide-react';
+import { Heart, Activity, Wind, Battery, Radio, Shield, Zap, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage }) {
-  const { activeAstronaut, isCommBlackout, storageBuffers, activeAstronautId } = useMission();
+  const { activeAstronaut, isCommBlackout, storageBuffers, activeAstronautId, personalizedAnomaly, sensorReliability } = useMission();
   const [timeStr, setTimeStr] = useState('14:28');
   const [secStr, setSecStr] = useState('32');
   const [secondNumber, setSecondNumber] = useState(32);
@@ -24,8 +24,11 @@ export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage
   // Pulse animation rate based on heart rate
   const pulseDuration = Math.max(0.35, (60 / (metrics.hr || 70))).toFixed(2);
 
-  // Seconds arc calculation (0 - 60 sec -> 0 - 360 deg)
+  // Seconds arc calculation
   const secStrokeDash = ((secondNumber / 60) * 880).toFixed(1);
+
+  const hrZ = personalizedAnomaly?.zScores?.hr ?? 0;
+  const sqiVal = sensorReliability?.sqi ?? 96;
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-3 select-none relative text-slate-100 font-mono overflow-hidden">
@@ -58,33 +61,34 @@ export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage
       {/* ============================================================== */}
       <div className="w-[84%] h-[86%] flex flex-col items-center justify-between z-20 py-1">
         
-        {/* 1. TOP ROW: Constrained width so pills never touch curved horizon */}
-        <div className="w-[80%] flex items-center justify-between text-xs pt-1">
+        {/* 1. TOP ROW: Comm, SQI Reliability, Battery */}
+        <div className="w-[82%] flex items-center justify-between text-xs pt-1">
           {/* Comm Status Pill */}
-          <div className="flex items-center gap-1.5 bg-slate-900/90 px-2.5 py-1 rounded-full border border-slate-700/80 shadow-xs">
+          <div className="flex items-center gap-1.5 bg-slate-900/90 px-2 py-0.5 rounded-full border border-slate-700/80 shadow-xs">
             <div className={`w-2 h-2 rounded-full ${isCommBlackout ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
             <span className={`text-[10px] font-extrabold ${isCommBlackout ? 'text-amber-400' : 'text-emerald-400'}`}>
               {isCommBlackout ? 'LOS' : 'AOS'}
             </span>
           </div>
 
-          {/* Mission Flight Day Marker */}
-          <div className="text-[10px] text-cyan-300 font-bold tracking-widest bg-cyan-950/80 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
-            FD-{activeAstronaut.flightDay}
+          {/* Feature 2: SQI Reliability Indicator on Watch Face */}
+          <div className="text-[10px] text-emerald-400 font-bold tracking-wider bg-emerald-950/80 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span>SQI {sqiVal}%</span>
           </div>
 
           {/* Battery */}
-          <div className="flex items-center gap-1 bg-slate-900/90 px-2.5 py-1 rounded-full border border-slate-700/80 text-slate-300 text-[10px] font-bold shadow-xs">
+          <div className="flex items-center gap-1 bg-slate-900/90 px-2 py-0.5 rounded-full border border-slate-700/80 text-slate-300 text-[10px] font-bold shadow-xs">
             <Battery className="w-3.5 h-3.5 text-emerald-400" />
             <span>84%</span>
           </div>
         </div>
 
-        {/* 2. CENTER DIGITAL CLOCK & STATUS (Spacious middle section) */}
-        <div className="flex flex-col items-center justify-center my-1">
+        {/* 2. CENTER DIGITAL CLOCK & STATUS */}
+        <div className="flex flex-col items-center justify-center my-0.5">
           <div className="text-[9px] uppercase tracking-widest text-slate-400 font-sans font-bold flex items-center gap-1 mb-0.5">
             <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
-            <span>LUNAR GATEWAY • UTC</span>
+            <span>FD-{activeAstronaut.flightDay} • UTC</span>
           </div>
           
           {/* Giant Time Display */}
@@ -97,9 +101,9 @@ export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage
             </span>
           </div>
 
-          {/* Status Badge with Breathing Space */}
+          {/* Status Badge */}
           <div 
-            className="text-[11px] px-3.5 py-0.5 rounded-full mt-1.5 font-bold uppercase tracking-wider text-center shadow-md flex items-center gap-1.5"
+            className="text-[11px] px-3.5 py-0.5 rounded-full mt-1 font-bold uppercase tracking-wider text-center shadow-md flex items-center gap-1.5"
             style={{
               backgroundColor: metrics.status.includes('CRITICAL') ? 'rgba(239,68,68,0.3)' : metrics.status.includes('WARN') ? 'rgba(245,158,11,0.3)' : 'rgba(0,240,255,0.18)',
               color: metrics.status.includes('CRITICAL') ? '#FCA5A5' : metrics.status.includes('WARN') ? '#FCD34D' : '#67E8F9',
@@ -111,25 +115,30 @@ export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage
           </div>
         </div>
 
-        {/* 3. SUB-DIALS (Widest middle section with generous horizontal gap) */}
+        {/* 3. SUB-DIALS (With Personalized Baseline Tagging) */}
         <div className="w-[96%] grid grid-cols-3 gap-2.5 my-1 text-center">
           
-          {/* Heart Rate Sub-dial */}
+          {/* Heart Rate Sub-dial with Feature 1: Personalized z-Score */}
           <div className="bg-gradient-to-b from-slate-900/95 to-slate-950/95 border border-slate-700/80 rounded-2xl p-2 flex flex-col items-center justify-between shadow-lg relative overflow-hidden">
-            <div className="flex items-center gap-1 text-[10px] text-red-400 font-bold">
-              <Heart 
-                className="w-3 h-3 text-red-500 fill-red-500" 
-                style={{ animation: `pulse ${pulseDuration}s ease-in-out infinite` }} 
-              />
-              <span>HR</span>
+            <div className="flex items-center justify-between w-full px-1">
+              <div className="flex items-center gap-0.5 text-[10px] text-red-400 font-bold">
+                <Heart 
+                  className="w-3 h-3 text-red-500 fill-red-500" 
+                  style={{ animation: `pulse ${pulseDuration}s ease-in-out infinite` }} 
+                />
+                <span>HR</span>
+              </div>
+              <span className={`text-[8px] font-mono font-bold ${Math.abs(hrZ) >= 2.0 ? 'text-rose-400 font-extrabold' : 'text-slate-400'}`}>
+                {hrZ >= 0 ? `+${hrZ}σ` : `${hrZ}σ`}
+              </span>
             </div>
             
             <div className="text-xl font-black text-white leading-tight my-0.5">
               {metrics.hr}
             </div>
 
-            <div className="text-[9px] text-slate-400 font-semibold uppercase">
-              BPM
+            <div className="text-[8px] text-slate-400 font-semibold uppercase">
+              BASE {Math.round(personalizedAnomaly?.baseline?.restingHR?.mean || 62)}
             </div>
 
             <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden mt-1">
@@ -188,7 +197,7 @@ export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage
 
         </div>
 
-        {/* 4. BOTTOM ACTION BUTTONS: Constrained width, elevated safely above bottom curve */}
+        {/* 4. BOTTOM ACTION BUTTONS */}
         <div className="w-[82%] flex items-center justify-between gap-2 pb-1 text-xs">
           
           <button
