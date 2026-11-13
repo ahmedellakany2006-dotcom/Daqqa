@@ -36,9 +36,9 @@ export default function GarminWatchFrame() {
   const handleBack = () => setCurrentScreen('hud');
 
   return (
-    <div className="flex flex-col items-center justify-center p-2 sm:p-4 select-none w-full max-w-3xl mx-auto">
+    <div className="flex flex-col items-center justify-center p-2 select-none w-full max-w-4xl mx-auto">
       
-      {/* Astronaut Wrist Selector */}
+      {/* Astronaut Selector Bar */}
       <div className="flex flex-wrap items-center justify-center gap-2 mb-6 bg-white/95 p-2 rounded-2xl border border-slate-200/90 shadow-sm backdrop-blur-sm">
         <span className="text-xs font-mono text-slate-500 px-2 font-bold uppercase tracking-wider">
           ASTRONAUT WRIST:
@@ -49,7 +49,7 @@ export default function GarminWatchFrame() {
             onClick={() => setActiveAstronautId(astro.id)}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
               activeAstronautId === astro.id
-                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25 ring-2 ring-sky-300'
+                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25 ring-2 ring-sky-300 scale-105'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -62,122 +62,190 @@ export default function GarminWatchFrame() {
         ))}
       </div>
 
-      {/* Physical Smartwatch Assembly - BIGGER SIZE */}
-      <div className="relative flex items-center justify-center my-6">
+      {/* Luxury Garmin Physical Smartwatch Housing */}
+      <div className="relative flex items-center justify-center my-4">
         
-        {/* Watch Straps (Silicone Spaceflight Ribbed Band) - Scaled Up */}
-        <div className="absolute -top-16 w-44 h-24 bg-gradient-to-b from-slate-800 via-slate-700 to-slate-900 rounded-t-3xl border-t border-x border-slate-600/60 shadow-xl flex flex-col items-center justify-around py-2">
-          <div className="w-28 h-1.5 bg-slate-950/70 rounded-full" />
-          <div className="w-28 h-1.5 bg-slate-950/70 rounded-full" />
-          <div className="w-28 h-1.5 bg-slate-950/70 rounded-full" />
-        </div>
-        <div className="absolute -bottom-16 w-44 h-24 bg-gradient-to-t from-slate-800 via-slate-700 to-slate-900 rounded-b-3xl border-b border-x border-slate-600/60 shadow-xl flex flex-col items-center justify-around py-2">
-          <div className="w-28 h-1.5 bg-slate-950/70 rounded-full" />
-          <div className="w-28 h-1.5 bg-slate-950/70 rounded-full" />
-          <div className="w-28 h-1.5 bg-slate-950/70 rounded-full" />
+        {/* Top Spaceflight Silicone Strap with Carbon Lugs */}
+        <div className="absolute -top-16 w-52 h-28 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 rounded-t-3xl border-t-2 border-x-2 border-slate-700/80 shadow-2xl flex flex-col items-center justify-around py-2.5 z-0">
+          <div className="w-36 h-2 bg-slate-950/90 rounded-full border-b border-slate-700/50" />
+          <div className="w-36 h-2 bg-slate-950/90 rounded-full border-b border-slate-700/50" />
+          <div className="w-36 h-2 bg-slate-950/90 rounded-full border-b border-slate-700/50" />
+          <div className="w-16 h-1 bg-cyan-500/40 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)]" />
         </div>
 
-        {/* Physical Buttons (Left Side: LIGHT, UP, DOWN) - Scaled Up */}
-        <div className="absolute -left-5 top-20 flex flex-col gap-10 z-20">
-          {/* LIGHT */}
-          <button
-            onClick={handleLight}
-            className="w-5 h-12 rounded-l-lg bg-gradient-to-r from-slate-500 to-slate-700 border-l border-y border-slate-400 hover:brightness-125 active:scale-95 transition-transform flex items-center justify-center group shadow-md"
-            title="LIGHT: Toggle Backlight / Glow"
-          >
-            <span className="sr-only">LIGHT</span>
-            <div className="w-1.5 h-6 bg-slate-300/60 rounded-full group-hover:bg-cyan-300" />
-          </button>
-          {/* UP */}
-          <button
-            onClick={handleUp}
-            className="w-5 h-12 rounded-l-lg bg-gradient-to-r from-slate-500 to-slate-700 border-l border-y border-slate-400 hover:brightness-125 active:scale-95 transition-transform flex items-center justify-center group shadow-md"
-            title="UP: Cycle Previous Screen"
-          >
-            <span className="sr-only">UP</span>
-            <div className="w-1.5 h-6 bg-slate-300/60 rounded-full group-hover:bg-cyan-300" />
-          </button>
-          {/* DOWN */}
-          <button
-            onClick={handleDown}
-            className="w-5 h-12 rounded-l-lg bg-gradient-to-r from-slate-500 to-slate-700 border-l border-y border-slate-400 hover:brightness-125 active:scale-95 transition-transform flex items-center justify-center group shadow-md"
-            title="DOWN: Cycle Next Screen"
-          >
-            <span className="sr-only">DOWN</span>
-            <div className="w-1.5 h-6 bg-slate-300/60 rounded-full group-hover:bg-cyan-300" />
-          </button>
+        {/* Bottom Spaceflight Silicone Strap */}
+        <div className="absolute -bottom-16 w-52 h-28 bg-gradient-to-t from-slate-900 via-slate-800 to-slate-900 rounded-b-3xl border-b-2 border-x-2 border-slate-700/80 shadow-2xl flex flex-col items-center justify-around py-2.5 z-0">
+          <div className="w-16 h-1 bg-cyan-500/40 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)]" />
+          <div className="w-36 h-2 bg-slate-950/90 rounded-full border-t border-slate-700/50" />
+          <div className="w-36 h-2 bg-slate-950/90 rounded-full border-t border-slate-700/50" />
+          <div className="w-36 h-2 bg-slate-950/90 rounded-full border-t border-slate-700/50" />
         </div>
 
-        {/* Physical Buttons (Right Side: START/STOP, BACK) - Scaled Up */}
-        <div className="absolute -right-5 top-24 flex flex-col gap-16 z-20">
-          {/* START/STOP (Red Accent) */}
-          <button
-            onClick={handleStartStop}
-            className="w-5 h-14 rounded-r-lg bg-gradient-to-l from-red-600 to-red-800 border-r border-y border-red-400 hover:brightness-125 active:scale-95 transition-transform flex items-center justify-center group shadow-lg shadow-red-500/30"
-            title="START/STOP: Open Task Survey / Select"
-          >
-            <span className="sr-only">START/STOP</span>
-            <div className="w-1.5 h-8 bg-red-200 rounded-full" />
-          </button>
-          {/* BACK */}
-          <button
-            onClick={handleBack}
-            className="w-5 h-12 rounded-r-lg bg-gradient-to-l from-slate-500 to-slate-700 border-r border-y border-slate-400 hover:brightness-125 active:scale-95 transition-transform flex items-center justify-center group shadow-md"
-            title="BACK: Return to Watchface HUD"
-          >
-            <span className="sr-only">BACK</span>
-            <div className="w-1.5 h-6 bg-slate-300/60 rounded-full group-hover:bg-cyan-300" />
-          </button>
-        </div>
-
-        {/* Bezel Ring (Titanium with Torx Screws & Engravings) - PROMINENT & BIGGER */}
-        <div className="relative w-[340px] h-[340px] sm:w-[460px] sm:h-[460px] md:w-[520px] md:h-[520px] rounded-full bg-gradient-to-br from-slate-700 via-slate-800 to-slate-950 p-4 sm:p-5 shadow-[0_25px_60px_rgba(15,23,42,0.4),0_0_30px_rgba(2,132,199,0.2)] border-4 border-slate-600/90">
+        {/* ============================================================== */}
+        {/* LEFT PHYSICAL BUTTONS (Integrated with Titanium Crown Guards) */}
+        {/* ============================================================== */}
+        <div className="absolute -left-6 sm:-left-7 top-24 flex flex-col gap-12 z-20">
           
-          {/* Bezel Inner Ring with Minute Indices */}
-          <div className="relative w-full h-full rounded-full bg-slate-900 border-4 sm:border-[6px] border-slate-800 p-3 sm:p-4 flex items-center justify-center shadow-inner">
-            
-            {/* Screws and Engravings */}
-            <div className="absolute top-3 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow" />
-            <div className="absolute bottom-3 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow" />
-            <div className="absolute left-3 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow" />
-            <div className="absolute right-3 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow" />
+          {/* 1. LIGHT BUTTON */}
+          <div className="flex items-center group">
+            <button
+              onClick={handleLight}
+              className="relative w-6 sm:w-7 h-14 rounded-l-xl bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500 border-l-2 border-y-2 border-slate-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),-3px_4px_10px_rgba(0,0,0,0.6)] active:translate-x-1.5 transition-all flex items-center justify-start pl-1 cursor-pointer overflow-hidden"
+              title="LIGHT: Toggle AMOLED Backlight Glow"
+            >
+              {/* Knurled Metal Grips */}
+              <div className="w-3 h-10 knurled-btn rounded-xs border-r border-slate-400/60" />
+              {/* Mini Glow Accent */}
+              <div className={`absolute top-1 left-1.5 w-1.5 h-1.5 rounded-full ${backlightOn ? 'bg-cyan-400 shadow-[0_0_6px_#00F0FF]' : 'bg-slate-400'}`} />
+            </button>
+            <span className="hidden sm:inline-block font-mono text-[9px] font-extrabold text-slate-400 ml-1.5 uppercase tracking-tighter opacity-70 group-hover:opacity-100 group-hover:text-cyan-500 transition-opacity">
+              LIGHT
+            </span>
+          </div>
 
-            {/* Tactical Engravings */}
-            <div className="absolute top-5 font-mono text-[10px] sm:text-xs text-slate-300 font-extrabold tracking-widest uppercase">
-              GARMIN TACTIX 7
+          {/* 2. UP BUTTON */}
+          <div className="flex items-center group">
+            <button
+              onClick={handleUp}
+              className="relative w-6 sm:w-7 h-14 rounded-l-xl bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500 border-l-2 border-y-2 border-slate-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),-3px_4px_10px_rgba(0,0,0,0.6)] active:translate-x-1.5 transition-all flex items-center justify-start pl-1 cursor-pointer overflow-hidden"
+              title="UP: Cycle Previous Screen (Storage -> Graph -> Survey -> HUD)"
+            >
+              <div className="w-3 h-10 knurled-btn rounded-xs border-r border-slate-400/60" />
+            </button>
+            <span className="hidden sm:inline-block font-mono text-[9px] font-extrabold text-slate-400 ml-1.5 uppercase tracking-tighter opacity-70 group-hover:opacity-100 group-hover:text-cyan-500 transition-opacity">
+              UP
+            </span>
+          </div>
+
+          {/* 3. DOWN BUTTON */}
+          <div className="flex items-center group">
+            <button
+              onClick={handleDown}
+              className="relative w-6 sm:w-7 h-14 rounded-l-xl bg-gradient-to-r from-slate-400 via-slate-200 to-slate-500 border-l-2 border-y-2 border-slate-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),-3px_4px_10px_rgba(0,0,0,0.6)] active:translate-x-1.5 transition-all flex items-center justify-start pl-1 cursor-pointer overflow-hidden"
+              title="DOWN: Cycle Next Screen (HUD -> Survey -> Graph -> Storage)"
+            >
+              <div className="w-3 h-10 knurled-btn rounded-xs border-r border-slate-400/60" />
+            </button>
+            <span className="hidden sm:inline-block font-mono text-[9px] font-extrabold text-slate-400 ml-1.5 uppercase tracking-tighter opacity-70 group-hover:opacity-100 group-hover:text-cyan-500 transition-opacity">
+              DOWN
+            </span>
+          </div>
+
+        </div>
+
+        {/* ============================================================== */}
+        {/* RIGHT PHYSICAL BUTTONS (START/STOP & BACK) */}
+        {/* ============================================================== */}
+        <div className="absolute -right-6 sm:-right-7 top-28 flex flex-col gap-20 z-20">
+          
+          {/* 1. START / STOP BUTTON (SIGNATURE GARMIN RED ANODIZED PUSHER) */}
+          <div className="flex items-center justify-end group">
+            <span className="hidden sm:inline-block font-mono text-[9px] font-extrabold text-red-500 mr-1.5 uppercase tracking-tighter opacity-90 group-hover:opacity-100 transition-opacity">
+              START
+            </span>
+            <button
+              onClick={handleStartStop}
+              className="relative w-6 sm:w-7 h-16 rounded-r-xl bg-gradient-to-l from-red-600 via-red-500 to-rose-700 border-r-2 border-y-2 border-red-400 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6),3px_4px_14px_rgba(225,29,72,0.6)] active:-translate-x-1.5 transition-all flex items-center justify-end pr-1 cursor-pointer overflow-hidden ring-1 ring-red-400/50"
+              title="START / STOP: Launch Behavioral Task Survey UI"
+            >
+              {/* Knurled Red Grip */}
+              <div className="w-3.5 h-11 knurled-red-btn rounded-xs border-l border-red-300/60" />
+              {/* Glowing Crimson Center Line */}
+              <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-1 h-8 bg-red-200 rounded-full shadow-[0_0_8px_#FF4D4D]" />
+            </button>
+          </div>
+
+          {/* 2. BACK / LAP BUTTON */}
+          <div className="flex items-center justify-end group">
+            <span className="hidden sm:inline-block font-mono text-[9px] font-extrabold text-slate-400 mr-1.5 uppercase tracking-tighter opacity-70 group-hover:opacity-100 group-hover:text-cyan-500 transition-opacity">
+              BACK
+            </span>
+            <button
+              onClick={handleBack}
+              className="relative w-6 sm:w-7 h-14 rounded-r-xl bg-gradient-to-l from-slate-400 via-slate-200 to-slate-500 border-r-2 border-y-2 border-slate-300 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8),3px_4px_10px_rgba(0,0,0,0.6)] active:-translate-x-1.5 transition-all flex items-center justify-end pr-1 cursor-pointer overflow-hidden"
+              title="BACK: Return to Main Watch Face HUD"
+            >
+              <div className="w-3 h-10 knurled-btn rounded-xs border-l border-slate-400/60" />
+            </button>
+          </div>
+
+        </div>
+
+        {/* ============================================================== */}
+        {/* TITANIUM WATCH CHASSIS & CNC ROTATING-STYLE BEZEL */}
+        {/* ============================================================== */}
+        <div className="relative w-[340px] h-[340px] sm:w-[470px] sm:h-[470px] md:w-[530px] md:h-[530px] rounded-full titanium-case p-4 sm:p-5 border-[3px] border-slate-500/70 z-10 flex items-center justify-center">
+          
+          {/* Outer Bezel with CNC Minute Chapter Ring */}
+          <div className="relative w-full h-full rounded-full bezel-ring p-3 sm:p-4 border-[3px] border-slate-700/80 flex items-center justify-center">
+            
+            {/* CNC Chapter Engravings: 24-Hour UTC Indicators */}
+            <div className="absolute top-1 font-mono text-[9px] sm:text-[10px] text-cyan-400 font-extrabold tracking-widest">▲ 24</div>
+            <div className="absolute right-2 font-mono text-[9px] sm:text-[10px] text-slate-400 font-bold">06</div>
+            <div className="absolute bottom-1 font-mono text-[9px] sm:text-[10px] text-slate-400 font-bold">12</div>
+            <div className="absolute left-2 font-mono text-[9px] sm:text-[10px] text-slate-400 font-bold">18</div>
+
+            {/* 5 Authentic Garmin Torx Screws */}
+            <div className="absolute top-6 left-12 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow flex items-center justify-center">
+              <div className="w-1.5 h-0.5 bg-slate-800 rotate-45" />
             </div>
-            <div className="absolute bottom-5 font-mono text-[9px] sm:text-[11px] text-cyan-400 font-extrabold tracking-widest uppercase">
+            <div className="absolute top-6 right-12 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow flex items-center justify-center">
+              <div className="w-1.5 h-0.5 bg-slate-800 -rotate-12" />
+            </div>
+            <div className="absolute bottom-7 left-14 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow flex items-center justify-center">
+              <div className="w-1.5 h-0.5 bg-slate-800 rotate-90" />
+            </div>
+            <div className="absolute bottom-7 right-14 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow flex items-center justify-center">
+              <div className="w-1.5 h-0.5 bg-slate-800 rotate-30" />
+            </div>
+            <div className="absolute top-2 w-2.5 h-2.5 rounded-full bg-slate-500 border border-slate-300 shadow flex items-center justify-center">
+              <div className="w-1.5 h-0.5 bg-slate-800 rotate-60" />
+            </div>
+
+            {/* Aerospace Markings */}
+            <div className="absolute top-9 font-mono text-[8px] sm:text-[9px] text-slate-400 font-black tracking-widest uppercase">
+              GARMIN • TACTIX 7
+            </div>
+            <div className="absolute bottom-9 font-mono text-[8px] sm:text-[9px] text-sky-400 font-black tracking-widest uppercase">
               CONNECT IQ • MONKEY C
             </div>
 
-            {/* Circular AMOLED Display Screen */}
-            <div className={`relative w-full h-full rounded-full bg-[#050811] overflow-hidden flex items-center justify-center transition-all ${
-              backlightOn ? 'watch-screen-glow brightness-125' : 'watch-screen-glow'
+            {/* ============================================================== */}
+            {/* SAPPHIRE CRYSTAL LENS & AMOLED DISPLAY */}
+            {/* ============================================================== */}
+            <div className={`relative w-full h-full rounded-full sapphire-lens overflow-hidden flex items-center justify-center transition-all ${
+              backlightOn ? 'brightness-125' : ''
             }`}>
               
-              {/* Glass Glare Highlight */}
-              <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-cyan-400/5 to-white/10 rounded-full pointer-events-none z-20" />
+              {/* Curved Sapphire Crystal Lens Reflection */}
+              <div className="absolute inset-0 rounded-full sapphire-glare pointer-events-none z-30" />
               
-              {/* Autonomous Wrist Alert Overlay */}
+              {/* Outer Minute Track Ring */}
+              <div className="absolute inset-3 rounded-full border border-slate-800/80 pointer-events-none z-10" />
+              <div className="absolute inset-5 rounded-full border border-dashed border-cyan-500/15 pointer-events-none z-10" />
+
+              {/* Autonomous Wrist Alert Modal */}
               <WatchAlertModal />
 
-              {/* Screen Content Switcher */}
-              {currentScreen === 'hud' && (
-                <WatchFaceHUD
-                  onOpenSurveys={() => setCurrentScreen('survey')}
-                  onOpenGraph={() => setCurrentScreen('graph')}
-                  onOpenStorage={() => setCurrentScreen('storage')}
-                />
-              )}
-              {currentScreen === 'survey' && (
-                <WatchSurveyUI onBack={() => setCurrentScreen('hud')} />
-              )}
-              {currentScreen === 'graph' && (
-                <WatchSensorGraph onBack={() => setCurrentScreen('hud')} />
-              )}
-              {currentScreen === 'storage' && (
-                <WatchStorageBuffer onBack={() => setCurrentScreen('hud')} />
-              )}
+              {/* Interactive Screen Switcher */}
+              <div className="relative z-20 w-full h-full">
+                {currentScreen === 'hud' && (
+                  <WatchFaceHUD
+                    onOpenSurveys={() => setCurrentScreen('survey')}
+                    onOpenGraph={() => setCurrentScreen('graph')}
+                    onOpenStorage={() => setCurrentScreen('storage')}
+                  />
+                )}
+                {currentScreen === 'survey' && (
+                  <WatchSurveyUI onBack={() => setCurrentScreen('hud')} />
+                )}
+                {currentScreen === 'graph' && (
+                  <WatchSensorGraph onBack={() => setCurrentScreen('hud')} />
+                )}
+                {currentScreen === 'storage' && (
+                  <WatchStorageBuffer onBack={() => setCurrentScreen('hud')} />
+                )}
+              </div>
 
             </div>
 
@@ -187,23 +255,23 @@ export default function GarminWatchFrame() {
 
       </div>
 
-      {/* Button Guide Labels */}
-      <div className="flex flex-wrap items-center justify-center gap-4 mt-4 text-xs font-mono text-slate-600 bg-white/95 px-5 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+      {/* Button Operation Guide Footer */}
+      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mt-4 text-xs font-mono text-slate-600 bg-white/95 px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold">LIGHT</kbd>
-          Glow
+          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold shadow-xs">LIGHT</kbd>
+          <span>Glow Screen</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold">UP / DOWN</kbd>
-          Cycle Screens
+          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold shadow-xs">UP / DOWN</kbd>
+          <span>Switch Mode</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-300 font-bold">START</kbd>
-          Task UI
+          <kbd className="px-2.5 py-0.5 rounded bg-rose-600 text-white border border-rose-500 font-extrabold shadow-xs">START</kbd>
+          <span>Behavioral Task UI</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold">BACK</kbd>
-          Home HUD
+          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold shadow-xs">BACK</kbd>
+          <span>Main HUD</span>
         </span>
       </div>
 
