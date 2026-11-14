@@ -4,29 +4,32 @@
  * and evaluate future decompensation risk over a 48-hour forward horizon.
  */
 
-export function computePredictiveTrendForecast(astronaut, telemetryHistory, multimodalRisk, personalizedAnomaly) {
-  const currentMMRS = multimodalRisk.mmrs;
-  const hrvZ = personalizedAnomaly.zScores.hrv;
-  const hrZ = personalizedAnomaly.zScores.hr;
-  const currentHR = astronaut.current.hr;
-  const currentHRV = astronaut.current.hrv;
-  const currentSpO2 = astronaut.current.spo2;
+export function computePredictiveTrendForecast(astronaut, telemetryHistory = [], multimodalRisk = {}, personalizedAnomaly = {}) {
+  const currentMMRS = Number.isFinite(multimodalRisk?.mmrs) ? multimodalRisk.mmrs : 18;
+  const hrvZ = Number.isFinite(personalizedAnomaly?.zScores?.hrv) ? personalizedAnomaly.zScores.hrv : 0;
+  const hrZ = Number.isFinite(personalizedAnomaly?.zScores?.hr) ? personalizedAnomaly.zScores.hr : 0;
+  const currentHR = Number.isFinite(astronaut?.current?.hr) ? astronaut.current.hr : 65;
+  const currentHRV = Number.isFinite(astronaut?.current?.hrv) ? astronaut.current.hrv : 60;
+  const currentSpO2 = Number.isFinite(astronaut?.current?.spo2) ? astronaut.current.spo2 : 98.4;
 
   // Base recovery index (0: complete exhaustion, 100: optimal physiological readiness)
   const currentRecovery = Math.max(5, Math.min(100, Math.round(100 - currentMMRS * 0.85)));
 
   // Trend slope estimation based on recent historical telemetry ticks
-  const recentLogs = telemetryHistory.slice(-20);
+  const safeHistory = Array.isArray(telemetryHistory) ? telemetryHistory : [];
+  const recentLogs = safeHistory.slice(-20);
   let hrSlope = 0;
   let hrvSlope = 0;
   if (recentLogs.length >= 10) {
-    const firstHalfHR = recentLogs.slice(0, 10).reduce((acc, t) => acc + t.hr, 0) / 10;
-    const secondHalfHR = recentLogs.slice(-10).reduce((acc, t) => acc + t.hr, 0) / 10;
-    hrSlope = Number((secondHalfHR - firstHalfHR).toFixed(2));
+    const firstHalfHR = recentLogs.slice(0, 10).reduce((acc, t) => acc + (Number.isFinite(t?.hr) ? t.hr : 65), 0) / 10;
+    const secondHalfHR = recentLogs.slice(-10).reduce((acc, t) => acc + (Number.isFinite(t?.hr) ? t.hr : 65), 0) / 10;
+    const rawHrSlope = secondHalfHR - firstHalfHR;
+    hrSlope = Number.isFinite(rawHrSlope) ? Number(rawHrSlope.toFixed(2)) : 0;
 
-    const firstHalfHRV = recentLogs.slice(0, 10).reduce((acc, t) => acc + t.hrv, 0) / 10;
-    const secondHalfHRV = recentLogs.slice(-10).reduce((acc, t) => acc + t.hrv, 0) / 10;
-    hrvSlope = Number((secondHalfHRV - firstHalfHRV).toFixed(2));
+    const firstHalfHRV = recentLogs.slice(0, 10).reduce((acc, t) => acc + (Number.isFinite(t?.hrv) ? t.hrv : 60), 0) / 10;
+    const secondHalfHRV = recentLogs.slice(-10).reduce((acc, t) => acc + (Number.isFinite(t?.hrv) ? t.hrv : 60), 0) / 10;
+    const rawHrvSlope = secondHalfHRV - firstHalfHRV;
+    hrvSlope = Number.isFinite(rawHrvSlope) ? Number(rawHrvSlope.toFixed(2)) : 0;
   }
 
   // Deterioration Probability (% chance of acute health crash in next 24-48h)
@@ -36,25 +39,27 @@ export function computePredictiveTrendForecast(astronaut, telemetryHistory, mult
     (hrvZ < -1.5 ? 20 : 0) +
     (currentSpO2 < 93 ? 25 : 0)
   );
-  deteriorationProb24h = Math.min(96, Math.max(4, deteriorationProb24h));
+  deteriorationProb24h = Number.isFinite(deteriorationProb24h) ? Math.min(96, Math.max(4, deteriorationProb24h)) : 5;
 
   // Forward 48-Hour Forecast Projection Points
   // T+0h (Now), T+6h, T+12h, T+24h, T+36h, T+48h
   const timeSteps = [0, 6, 12, 24, 36, 48];
   
   // Model drift rate per 6-hour epoch
-  const driftRate = (currentMMRS > 60 ? -3.5 : currentMMRS > 40 ? -1.2 : +1.5) + (hrvSlope * 0.4);
+  const baseDrift = (currentMMRS > 60 ? -3.5 : currentMMRS > 40 ? -1.2 : +1.5);
+  const driftRate = Number.isFinite(baseDrift + (hrvSlope * 0.4)) ? (baseDrift + (hrvSlope * 0.4)) : 0;
 
-  const forecastPoints = timeSteps.map((hour, idx) => {
+  const forecastPoints = timeSteps.map((hour) => {
     // Non-linear projection curve
     const expected = Math.max(10, Math.min(100, Math.round(currentRecovery + driftRate * (hour / 6))));
     const uncertaintyBand = Math.round(hour * 0.35); // Uncertainty grows over time
+    const safeExpected = Number.isFinite(expected) ? expected : 75;
     return {
       hour: `+${hour}h`,
       hoursNum: hour,
-      predictedRecovery: expected,
-      confidenceLower: Math.max(5, expected - uncertaintyBand),
-      confidenceUpper: Math.min(100, expected + uncertaintyBand)
+      predictedRecovery: safeExpected,
+      confidenceLower: Math.max(5, safeExpected - uncertaintyBand),
+      confidenceUpper: Math.min(100, safeExpected + uncertaintyBand)
     };
   });
 

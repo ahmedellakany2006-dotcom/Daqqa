@@ -4,7 +4,14 @@ import { Network, Brain, Heart, Wind, Moon, Flame, ShieldAlert, CheckCircle } fr
 
 export default function MultimodalRiskMatrix() {
   const { multimodalRisk } = useMission();
-  const { mmrs, clinicalSeverity, syndromeLabel, elevatedModalitiesCount, modalityBreakdown, recommendations } = multimodalRisk;
+  const { 
+    mmrs = 18, 
+    clinicalSeverity = 'LOW', 
+    syndromeLabel = 'Nominal Spaceflight Adaptation', 
+    elevatedModalitiesCount = 0, 
+    modalityBreakdown = {}, 
+    recommendations = [] 
+  } = multimodalRisk || {};
 
   const getSeverityBadge = () => {
     switch (clinicalSeverity) {
@@ -23,7 +30,8 @@ export default function MultimodalRiskMatrix() {
 
   const renderModalityBar = (label, value, icon) => {
     const Icon = icon;
-    const isHigh = value >= 60;
+    const safeVal = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
+    const isHigh = safeVal >= 60;
 
     return (
       <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60 shadow-lg">
@@ -33,15 +41,15 @@ export default function MultimodalRiskMatrix() {
             <span>{label}</span>
           </span>
           <span className={isHigh ? 'text-rose-400 font-extrabold' : 'text-slate-200'}>
-            {value}/100
+            {safeVal}/100
           </span>
         </div>
         <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-1.5">
           <div 
             className={`h-full ${
-              value >= 75 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]' : value >= 50 ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-cyan-400 shadow-[0_0_8px_#00F0FF]'
+              safeVal >= 75 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]' : safeVal >= 50 ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-cyan-400 shadow-[0_0_8px_#00F0FF]'
             }`} 
-            style={{ width: `${value}%` }} 
+            style={{ width: `${safeVal}%` }} 
           />
         </div>
       </div>

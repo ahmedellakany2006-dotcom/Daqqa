@@ -4,7 +4,19 @@ import { ShieldCheck, AlertTriangle, Activity, Waves, Gauge, RefreshCw, HandMeta
 
 export default function SensorReliabilityMonitor() {
   const { sensorReliability, simulateLowContact, toggleLowContactSimulation } = useMission();
-  const { sqi, perfusionIndex, motionLevel, motionScore, contactQuality, reliabilityStatus, isTrustworthy, recommendation, opticalNoiseFloorDb } = sensorReliability;
+  const { 
+    sqi = 96, 
+    perfusionIndex = 4.2, 
+    motionLevel = "LOW", 
+    motionScore = 12, 
+    contactQuality = "OPTIMAL", 
+    reliabilityStatus = "HIGH_CONFIDENCE", 
+    isTrustworthy = true, 
+    recommendation = "", 
+    opticalNoiseFloorDb = -48 
+  } = sensorReliability || {};
+
+  const safeMotion = Number.isFinite(motionScore) ? Math.min(100, Math.max(0, motionScore)) : 0;
 
   return (
     <div className="galaxy-glass-card rounded-2xl p-5 shadow-2xl relative z-20">
@@ -58,7 +70,7 @@ export default function SensorReliabilityMonitor() {
               ? 'bg-amber-950/80 text-amber-300 border-amber-500/50 shadow-[0_0_8px_rgba(245,158,11,0.3)]' 
               : 'bg-rose-950/80 text-rose-300 border-rose-500/50 shadow-[0_0_8px_rgba(244,63,94,0.3)]'
           }`}>
-            {reliabilityStatus.replace('_', ' ')}
+            {(reliabilityStatus || '').replace('_', ' ')}
           </span>
         </div>
 
@@ -73,13 +85,13 @@ export default function SensorReliabilityMonitor() {
               {motionLevel}
             </div>
             <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-              Motion Index: <strong className="text-slate-200">{motionScore}/100</strong>
+              Motion Index: <strong className="text-slate-200">{safeMotion}/100</strong>
             </p>
           </div>
           <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-2">
             <div 
-              className={`h-full ${motionScore > 60 ? 'bg-amber-400' : 'bg-cyan-400 shadow-[0_0_8px_#00F0FF]'}`} 
-              style={{ width: `${motionScore}%` }} 
+              className={`h-full ${safeMotion > 60 ? 'bg-amber-400' : 'bg-cyan-400 shadow-[0_0_8px_#00F0FF]'}`} 
+              style={{ width: `${safeMotion}%` }} 
             />
           </div>
         </div>

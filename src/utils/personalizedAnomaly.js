@@ -47,20 +47,34 @@ export const CREW_BASELINES = {
  * Calculate z-score: z = (value - mean) / stdDev
  */
 export function calculateZScore(value, mean, stdDev) {
-  if (!stdDev || stdDev === 0) return 0;
-  return Number(((value - mean) / stdDev).toFixed(2));
+  if (
+    typeof value !== 'number' || !Number.isFinite(value) ||
+    typeof mean !== 'number' || !Number.isFinite(mean) ||
+    typeof stdDev !== 'number' || !Number.isFinite(stdDev) ||
+    stdDev <= 0
+  ) {
+    return 0;
+  }
+  const z = (value - mean) / stdDev;
+  return Number.isFinite(z) ? Number(z.toFixed(2)) : 0;
 }
 
 /**
  * Evaluate personalized deviations for current reading
  */
-export function evaluatePersonalizedAnomaly(astronautId, currentMetrics) {
+export function evaluatePersonalizedAnomaly(astronautId, currentMetrics = {}) {
   const baseline = CREW_BASELINES[astronautId] || CREW_BASELINES["ASTRO-01"];
+  const safeMetrics = currentMetrics || {};
 
-  const hrZ = calculateZScore(currentMetrics.hr, baseline.restingHR.mean, baseline.restingHR.stdDev);
-  const hrvZ = calculateZScore(currentMetrics.hrv, baseline.hrvRMSSD.mean, baseline.hrvRMSSD.stdDev);
-  const spo2Z = calculateZScore(currentMetrics.spo2, baseline.spo2Pct.mean, baseline.spo2Pct.stdDev);
-  const stressZ = calculateZScore(currentMetrics.stress, baseline.stressIndex.mean, baseline.stressIndex.stdDev);
+  const hr = Number.isFinite(safeMetrics.hr) ? safeMetrics.hr : baseline.restingHR.mean;
+  const hrv = Number.isFinite(safeMetrics.hrv) ? safeMetrics.hrv : baseline.hrvRMSSD.mean;
+  const spo2 = Number.isFinite(safeMetrics.spo2) ? safeMetrics.spo2 : baseline.spo2Pct.mean;
+  const stress = Number.isFinite(safeMetrics.stress) ? safeMetrics.stress : baseline.stressIndex.mean;
+
+  const hrZ = calculateZScore(hr, baseline.restingHR.mean, baseline.restingHR.stdDev);
+  const hrvZ = calculateZScore(hrv, baseline.hrvRMSSD.mean, baseline.hrvRMSSD.stdDev);
+  const spo2Z = calculateZScore(spo2, baseline.spo2Pct.mean, baseline.spo2Pct.stdDev);
+  const stressZ = calculateZScore(stress, baseline.stressIndex.mean, baseline.stressIndex.stdDev);
 
   // Personalized classification
   let isPersonalizedAnomaly = false;
@@ -72,7 +86,7 @@ export function evaluatePersonalizedAnomaly(astronautId, currentMetrics) {
   if (hrZ > 3.0) {
     isPersonalizedAnomaly = true;
     severity = "CRITICAL";
-    flaggedMetrics.push(`HR +${hrZ}σ above personal baseline (${currentMetrics.hr} vs ${baseline.restingHR.mean.toFixed(1)} BPM)`);
+    flaggedMetrics.push(`HR +${hrZ}σ above personal baseline (${hr} vs ${baseline.restingHR.mean.toFixed(1)} BPM)`);
   } else if (hrZ > 2.0) {
     isPersonalizedAnomaly = true;
     severity = severity === "CRITICAL" ? "CRITICAL" : "ELEVATED";
@@ -83,14 +97,14 @@ export function evaluatePersonalizedAnomaly(astronautId, currentMetrics) {
   if (hrvZ < -2.5) {
     isPersonalizedAnomaly = true;
     severity = severity === "CRITICAL" ? "CRITICAL" : "ELEVATED";
-    flaggedMetrics.push(`HRV ${hrvZ}σ collapsed below rest baseline (${currentMetrics.hrv} vs ${baseline.hrvRMSSD.mean.toFixed(1)} ms)`);
+    flaggedMetrics.push(`HRV ${hrvZ}σ collapsed below rest baseline (${hrv} vs ${baseline.hrvRMSSD.mean.toFixed(1)} ms)`);
   }
 
   // SpO2 drop (z < -3.0 or absolute < 90%)
-  if (spo2Z < -3.0 || currentMetrics.spo2 < 90) {
+  if (spo2Z < -3.0 || spo2 < 90) {
     isPersonalizedAnomaly = true;
     severity = "CRITICAL";
-    flaggedMetrics.push(`SpO2 ${spo2Z}σ nadir (${currentMetrics.spo2}% vs ${baseline.spo2Pct.mean.toFixed(1)}%)`);
+    flaggedMetrics.push(`SpO2 ${spo2Z}σ nadir (${spo2}% vs ${baseline.spo2Pct.mean.toFixed(1)}%)`);
   }
 
   if (isPersonalizedAnomaly) {
@@ -106,9 +120,9 @@ export function evaluatePersonalizedAnomaly(astronautId, currentMetrics) {
       stress: stressZ
     },
     deltas: {
-      hrDelta: Number((currentMetrics.hr - baseline.restingHR.mean).toFixed(1)),
-      hrvDelta: Number((currentMetrics.hrv - baseline.hrvRMSSD.mean).toFixed(1)),
-      spo2Delta: Number((currentMetrics.spo2 - baseline.spo2Pct.mean).toFixed(1))
+      hrDelta: Number.isFinite(hr - baseline.restingHR.mean) ? Number((hr - baseline.restingHR.mean).toFixed(1)) : 0,
+      hrvDelta: Number.isFinite(hrv - baseline.hrvRMSSD.mean) ? Number((hrv - baseline.hrvRMSSD.mean).toFixed(1)) : 0,
+      spo2Delta: Number.isFinite(spo2 - baseline.spo2Pct.mean) ? Number((spo2 - baseline.spo2Pct.mean).toFixed(1)) : 0
     },
     isPersonalizedAnomaly,
     severity,

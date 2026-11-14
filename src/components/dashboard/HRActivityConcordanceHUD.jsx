@@ -11,15 +11,24 @@ export default function HRActivityConcordanceHUD() {
     setManualMetsOverride 
   } = useMission();
 
-  const metrics = activeAstronaut.current;
-  const baseRHR = personalizedAnomaly?.baseline?.restingHR?.mean ?? activeAstronaut.baseHR ?? 62;
-  const currentHR = metrics.hr || baseRHR;
-  const currentSpO2 = metrics.spo2 || 98.4;
-  const currentMets = metrics.activityMets ?? 1.8;
-  const expectedHR = metrics.expectedHR ?? baseRHR;
-  const cosi = metrics.cosi ?? ((currentSpO2 / Math.max(40, currentHR)) * 100).toFixed(2);
-  const esr = metrics.exertionStrainRatio ?? 1.0;
-  const deltaResting = metrics.hrDeltaResting ?? (currentHR - baseRHR);
+  const metrics = activeAstronaut?.current || {};
+  const baseRHR = Number.isFinite(personalizedAnomaly?.baseline?.restingHR?.mean) 
+    ? personalizedAnomaly.baseline.restingHR.mean 
+    : (activeAstronaut?.baseHR ?? 62);
+  const currentHR = Number.isFinite(metrics.hr) ? metrics.hr : baseRHR;
+  const currentSpO2 = Number.isFinite(metrics.spo2) ? metrics.spo2 : 98.4;
+  const currentMets = Number.isFinite(metrics.activityMets) ? metrics.activityMets : 1.8;
+  const expectedHR = Number.isFinite(metrics.expectedHR) ? metrics.expectedHR : baseRHR;
+  const rawCOSI = Number.isFinite(Number(metrics.cosi))
+    ? Number(metrics.cosi)
+    : ((currentSpO2 / Math.max(40, currentHR)) * 100);
+  const cosi = Number.isFinite(rawCOSI) ? rawCOSI.toFixed(2) : "1.40";
+  const esr = Number.isFinite(Number(metrics.exertionStrainRatio)) 
+    ? Number(metrics.exertionStrainRatio).toFixed(2) 
+    : "1.00";
+  const deltaResting = Number.isFinite(metrics.hrDeltaResting) 
+    ? metrics.hrDeltaResting 
+    : (currentHR - baseRHR);
   const currentCategory = getActivityCategory(currentMets);
 
   const isUncoupled = metrics.concordanceStatus === "INAPPROPRIATE_TACHYCARDIA_UNCOUPLED";
@@ -30,8 +39,14 @@ export default function HRActivityConcordanceHUD() {
   // SVG Canvas: width = 460, height = 220
   // X-axis: METs from 1.0 to 9.0
   // Y-axis: HR from 50 to 180 bpm
-  const mapMetsToX = (m) => 40 + ((Math.max(1.0, Math.min(9.0, m)) - 1.0) / 8.0) * 390;
-  const mapHRToY = (hr) => 200 - ((Math.max(50, Math.min(180, hr)) - 50) / 130) * 170;
+  const mapMetsToX = (m) => {
+    const val = Number.isFinite(m) ? m : 1.0;
+    return 40 + ((Math.max(1.0, Math.min(9.0, val)) - 1.0) / 8.0) * 390;
+  };
+  const mapHRToY = (hr) => {
+    const val = Number.isFinite(hr) ? hr : 70;
+    return 200 - ((Math.max(50, Math.min(180, val)) - 50) / 130) * 170;
+  };
 
   const currentX = mapMetsToX(currentMets);
   const currentY = mapHRToY(currentHR);
@@ -144,7 +159,7 @@ export default function HRActivityConcordanceHUD() {
           <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1.5">
             <div 
               className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all duration-300" 
-              style={{ width: `${Math.min(100, ((currentMets - 1.0) / 7.5) * 100)}%` }} 
+              style={{ width: `${Math.min(100, Math.max(0, ((currentMets - 1.0) / 7.5) * 100))}%` }} 
             />
           </div>
         </div>

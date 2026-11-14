@@ -18,11 +18,18 @@ function escapeCsvValue(val) {
 }
 
 /**
- * Formats float to fixed precision cleanly without trailing zero artifacts
+ * Formats float to fixed precision cleanly without trailing zero artifacts or NaN
  */
+function safeNum(val, fallback = 0, decimals = null) {
+  const num = Number(val);
+  if (!Number.isFinite(num)) {
+    return decimals !== null ? Number(fallback).toFixed(decimals) : String(fallback);
+  }
+  return decimals !== null ? num.toFixed(decimals) : String(num);
+}
+
 function formatNumber(val, decimals = 2) {
-  if (val === null || val === undefined || isNaN(val)) return "0";
-  return Number(Number(val).toFixed(decimals)).toString();
+  return safeNum(val, 0, decimals);
 }
 
 /**
@@ -75,77 +82,83 @@ export function exportDashboardTelemetryToCsv(
     "Subjective_POMS_Focus_Score"
   ];
 
-  const sleepSurvey = surveyHistory.find(s => s.type === "SLEEP_QUALITY");
-  const pomsSurvey = surveyHistory.find(s => s.type === "POMS_PSYCHOLOGICAL");
+  const safeAstro = astronaut || { id: "ASTRO-01", name: "Astronaut", flightDay: 1, baseHR: 65 };
+  const safeHistory = telemetryHistory && telemetryHistory.length ? telemetryHistory : [];
+  const safeSurveys = surveyHistory && surveyHistory.length ? surveyHistory : [];
+
+  const sleepSurvey = safeSurveys.find(s => s.type === "SLEEP_QUALITY");
+  const pomsSurvey = safeSurveys.find(s => s.type === "POMS_PSYCHOLOGICAL");
   const sleepVal = sleepSurvey?.ratings?.sleepQuality ?? 4;
   const focusVal = pomsSurvey?.ratings?.focusScore ?? 4;
 
-  const baseRHR = personalizedAnomaly?.baseline?.restingHR?.mean ?? astronaut.baseHR ?? 62;
-  const currentRHR = telemetryHistory.length > 0 && telemetryHistory[telemetryHistory.length - 1].restingHRCurrent
-    ? telemetryHistory[telemetryHistory.length - 1].restingHRCurrent
+  const baseRHR = personalizedAnomaly?.baseline?.restingHR?.mean ?? safeAstro.baseHR ?? 62;
+  const currentRHR = safeHistory.length > 0 && safeHistory[safeHistory.length - 1].restingHRCurrent
+    ? safeHistory[safeHistory.length - 1].restingHRCurrent
     : baseRHR;
 
   const predictedRecovery24h = trendForecast?.forecastPoints?.find(p => p.hour === "+24h")?.predictedRecovery 
     ?? trendForecast?.currentRecoveryIndex 
     ?? 80;
 
-  const rows = telemetryHistory.map((tick) => {
+  const rows = safeHistory.map((tick) => {
+    const safeHR = safeNum(tick.hr, baseRHR);
+    const safeSpO2 = safeNum(tick.spo2, 98.4, 1);
     const cosi = tick.cosi !== undefined 
-      ? formatNumber(tick.cosi, 2) 
-      : formatNumber((tick.spo2 / Math.max(40, tick.hr)) * 100, 2);
+      ? safeNum(tick.cosi, 1.40, 2) 
+      : safeNum((Number(safeSpO2) / Math.max(40, Number(safeHR))) * 100, 1.40, 2);
 
     const activityCategory = tick.activityCategory || "LIGHT_IVA";
-    const activityMets = formatNumber(tick.activityMets ?? 1.8, 2);
-    const activityIntensity = formatNumber(tick.activityIntensity ?? 22, 0);
-    const accelMag = formatNumber(tick.accelMagnitude ?? 1.04, 2);
+    const activityMets = safeNum(tick.activityMets ?? 1.8, 1.8, 2);
+    const activityIntensity = safeNum(tick.activityIntensity ?? 22, 22, 0);
+    const accelMag = safeNum(tick.accelMagnitude ?? 1.04, 1.04, 2);
 
     const hrElevResting = tick.hrDeltaResting !== undefined 
-      ? tick.hrDeltaResting 
-      : (tick.hr - baseRHR);
+      ? safeNum(tick.hrDeltaResting, 0) 
+      : safeNum(Number(safeHR) - baseRHR, 0);
 
-    const expectedHR = tick.expectedHR !== undefined ? tick.expectedHR : baseRHR;
+    const expectedHR = safeNum(tick.expectedHR !== undefined ? tick.expectedHR : baseRHR, baseRHR);
     const esr = tick.exertionStrainRatio !== undefined 
-      ? formatNumber(tick.exertionStrainRatio, 2) 
+      ? safeNum(tick.exertionStrainRatio, 1.0, 2) 
       : "1.00";
 
     const concordanceStatus = tick.concordanceStatus || "CONCORDANT";
     const alarmStatus = tick.isAlert ? (tick.alertMessage || "ACTIVE_ALARM") : "NOMINAL";
 
     return [
-      escapeCsvValue(tick.syncTimestamp || tick.timestamp),
-      tick.epoch || Date.now(),
-      escapeCsvValue(astronaut.id),
-      escapeCsvValue(astronaut.name),
-      astronaut.flightDay,
-      tick.hr,
-      formatNumber(tick.spo2, 1),
+      escapeCsvValue(tick.syncTimestamp || tick.timestamp || new Date().toISOString()),
+      safeNum(tick.epoch || Date.now()),
+      escapeCsvValue(safeAstro.id),
+      escapeCsvValue(safeAstro.name),
+      safeNum(safeAstro.flightDay, 1),
+      safeHR,
+      safeSpO2,
       cosi,
       escapeCsvValue(activityCategory),
       activityMets,
       activityIntensity,
       accelMag,
-      baseRHR,
-      currentRHR,
+      safeNum(baseRHR, 65),
+      safeNum(currentRHR, 65),
       hrElevResting,
       expectedHR,
       esr,
       escapeCsvValue(concordanceStatus),
-      tick.hrv,
-      tick.stress,
-      tick.fatigue,
-      formatNumber(tick.skinTemp, 1),
-      tick.respiration || 14,
-      sensorReliability?.sqi ?? 96,
+      safeNum(tick.hrv, 65),
+      safeNum(tick.stress, 20),
+      safeNum(tick.fatigue, 15),
+      safeNum(tick.skinTemp, 36.6, 1),
+      safeNum(tick.respiration || 14, 14),
+      safeNum(sensorReliability?.sqi ?? 96, 96),
       escapeCsvValue(sensorReliability?.reliabilityStatus ?? "HIGH_FIDELITY"),
-      formatNumber(sensorReliability?.perfusionIndex ?? 4.2, 1),
+      safeNum(sensorReliability?.perfusionIndex ?? 4.2, 4.2, 1),
       escapeCsvValue(sensorReliability?.motionLevel ?? "LOW_NOMINAL"),
-      multimodalRisk?.mmrs ?? 18,
+      safeNum(multimodalRisk?.mmrs ?? 18, 18),
       escapeCsvValue(multimodalRisk?.syndromeLabel ?? "Nominal Spaceflight Adaptation"),
-      predictedRecovery24h,
-      trendForecast?.deteriorationProb24h ?? 4,
+      safeNum(predictedRecovery24h, 80),
+      safeNum(trendForecast?.deteriorationProb24h ?? 4, 4),
       escapeCsvValue(alarmStatus),
-      sleepVal,
-      focusVal
+      safeNum(sleepVal, 4),
+      safeNum(focusVal, 4)
     ].join(",");
   });
 
@@ -176,25 +189,31 @@ export function exportHRActivityAnalysisCsv(astronaut, telemetryHistory, baseRHR
     "Concordance_Clinical_Diagnosis"
   ];
 
-  const rows = telemetryHistory.map(tick => {
+  const safeAstro = astronaut || { id: "ASTRO-01" };
+  const safeHistory = telemetryHistory && telemetryHistory.length ? telemetryHistory : [];
+  const safeBaseRHR = Number.isFinite(baseRHR) ? baseRHR : 65;
+
+  const rows = safeHistory.map(tick => {
+    const safeHR = safeNum(tick.hr, safeBaseRHR);
+    const safeSpO2 = safeNum(tick.spo2, 98.4, 1);
     const cosi = tick.cosi !== undefined 
-      ? formatNumber(tick.cosi, 2) 
-      : formatNumber((tick.spo2 / Math.max(40, tick.hr)) * 100, 2);
+      ? safeNum(tick.cosi, 1.40, 2) 
+      : safeNum((Number(safeSpO2) / Math.max(40, Number(safeHR))) * 100, 1.40, 2);
 
     return [
-      escapeCsvValue(tick.syncTimestamp || tick.timestamp),
-      escapeCsvValue(astronaut.id),
-      tick.hr,
-      formatNumber(tick.spo2, 1),
+      escapeCsvValue(tick.syncTimestamp || tick.timestamp || new Date().toISOString()),
+      escapeCsvValue(safeAstro.id),
+      safeHR,
+      safeSpO2,
       cosi,
       escapeCsvValue(tick.activityCategory || "LIGHT_IVA"),
-      formatNumber(tick.activityMets ?? 1.8, 2),
-      formatNumber(tick.activityIntensity ?? 22, 0),
-      baseRHR,
-      tick.restingHRCurrent ?? baseRHR,
-      tick.hrDeltaResting ?? (tick.hr - baseRHR),
-      tick.expectedHR ?? baseRHR,
-      formatNumber(tick.exertionStrainRatio ?? 1.0, 2),
+      safeNum(tick.activityMets ?? 1.8, 1.8, 2),
+      safeNum(tick.activityIntensity ?? 22, 22, 0),
+      safeNum(safeBaseRHR, 65),
+      safeNum(tick.restingHRCurrent ?? safeBaseRHR, safeBaseRHR),
+      safeNum(tick.hrDeltaResting ?? (Number(safeHR) - safeBaseRHR), 0),
+      safeNum(tick.expectedHR ?? safeBaseRHR, safeBaseRHR),
+      safeNum(tick.exertionStrainRatio ?? 1.0, 1.0, 2),
       escapeCsvValue(tick.concordanceStatus || "CONCORDANT"),
       escapeCsvValue(tick.concordanceDiagnosis || "Optimal cardiorespiratory concordance.")
     ].join(",");

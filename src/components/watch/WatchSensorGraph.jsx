@@ -7,21 +7,26 @@ export default function WatchSensorGraph({ onBack }) {
   const logs = telemetryLogs[activeAstronautId] || [];
   const recentLogs = logs.slice(-25);
 
-  const hrVals = recentLogs.map(l => l.hr);
+  const hrVals = recentLogs
+    .map(l => l.hr)
+    .filter(v => typeof v === 'number' && Number.isFinite(v));
   const minHR = hrVals.length ? Math.min(...hrVals) : 60;
   const maxHR = hrVals.length ? Math.max(...hrVals) : 100;
-  const currentTick = recentLogs[recentLogs.length - 1] || activeAstronaut.current;
+  const currentTick = recentLogs[recentLogs.length - 1] || activeAstronaut?.current || {};
 
   // Build SVG path for Heart Rate curve (Optimized for circle width)
   const svgWidth = 220;
   const svgHeight = 75;
-  const range = Math.max(15, maxHR - minHR);
+  const range = Math.max(15, (Number.isFinite(maxHR) && Number.isFinite(minHR)) ? maxHR - minHR : 15);
 
+  const denominator = Math.max(1, recentLogs.length - 1);
   const points = recentLogs.map((l, index) => {
-    const x = (index / Math.max(1, recentLogs.length - 1)) * svgWidth;
-    const normalizedY = (l.hr - minHR) / range;
-    const y = svgHeight - normalizedY * (svgHeight - 14) - 7;
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
+    const x = (index / denominator) * svgWidth;
+    const safeHR = Number.isFinite(l.hr) ? l.hr : minHR;
+    const normalizedY = (safeHR - minHR) / range;
+    const safeNormY = Number.isFinite(normalizedY) ? normalizedY : 0.5;
+    const y = svgHeight - safeNormY * (svgHeight - 14) - 7;
+    return `${(Number.isFinite(x) ? x : 0).toFixed(1)},${(Number.isFinite(y) ? y : 0).toFixed(1)}`;
   }).join(' ');
 
   return (

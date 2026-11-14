@@ -4,11 +4,39 @@ import { UserCheck, Activity, Heart, Wind, ShieldAlert, CheckCircle2 } from 'luc
 
 export default function BaselineDeviationHUD() {
   const { activeAstronaut, personalizedAnomaly } = useMission();
-  const { baseline, zScores, deltas, isPersonalizedAnomaly, severity, diagnosticNarrative } = personalizedAnomaly;
-  const current = activeAstronaut.current;
+  
+  const safeBaseline = personalizedAnomaly?.baseline || {
+    restingHR: { mean: 65, stdDev: 5 },
+    hrvRMSSD: { mean: 60, stdDev: 6 },
+    spo2Pct: { mean: 98.4, stdDev: 0.6 },
+    stressIndex: { mean: 20, stdDev: 5 }
+  };
+  const safeZ = personalizedAnomaly?.zScores || { hr: 0, hrv: 0, spo2: 0, stress: 0 };
+  const safeDeltas = personalizedAnomaly?.deltas || { hrDelta: 0, hrvDelta: 0, spo2Delta: 0 };
+  const isPersonalizedAnomaly = Boolean(personalizedAnomaly?.isPersonalizedAnomaly);
+  const severity = personalizedAnomaly?.severity || "NOMINAL";
+  const diagnosticNarrative = personalizedAnomaly?.diagnosticNarrative || "Physiological vitals align with individual baseline.";
+  
+  const current = activeAstronaut?.current || {};
 
-  const renderMetricCard = (label, currentVal, unit, mean, stdDev, zScore, delta, color) => {
-    const isAnomalous = Math.abs(zScore) >= 2.0;
+  const fmtNum = (val, dec = 1, fallback = '0.0') => {
+    return (typeof val === 'number' && Number.isFinite(val)) ? val.toFixed(dec) : fallback;
+  };
+
+  const fmtDelta = (val, dec = 1, fallback = '0.0') => {
+    if (typeof val !== 'number' || !Number.isFinite(val)) return fallback;
+    return (val >= 0 ? `+${val.toFixed(dec)}` : val.toFixed(dec));
+  };
+
+  const fmtZScore = (z) => {
+    if (typeof z !== 'number' || !Number.isFinite(z)) return '+0.00σ';
+    return (z >= 0 ? `+${z.toFixed(2)}` : z.toFixed(2)) + 'σ';
+  };
+
+  const renderMetricCard = (label, currentVal, unit, mean, stdDev, zScore, delta) => {
+    const safeZVal = (typeof zScore === 'number' && Number.isFinite(zScore)) ? zScore : 0;
+    const isAnomalous = Math.abs(safeZVal) >= 2.0;
+    const displayVal = (typeof currentVal === 'number' && Number.isFinite(currentVal)) ? currentVal : (unit === '%' ? 98 : 65);
 
     return (
       <div className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
@@ -19,32 +47,36 @@ export default function BaselineDeviationHUD() {
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">{label}</span>
           <span className={`text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-full ${
-            Math.abs(zScore) >= 3.0 
+            Math.abs(safeZVal) >= 3.0 
               ? 'bg-rose-900/80 text-rose-200 border border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]'
-              : Math.abs(zScore) >= 2.0 
+              : Math.abs(safeZVal) >= 2.0 
               ? 'bg-amber-900/80 text-amber-200 border border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
               : 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/60'
           }`}>
-            {zScore >= 0 ? `+${zScore}σ` : `${zScore}σ`}
+            {fmtZScore(safeZVal)}
           </span>
         </div>
 
         <div className="flex items-baseline justify-between my-1">
           <div className="text-2xl font-black text-white font-mono tracking-tight">
-            {currentVal} <span className="text-xs font-normal text-slate-400">{unit}</span>
+            {displayVal} <span className="text-xs font-normal text-slate-400">{unit}</span>
           </div>
-          <div className={`text-xs font-mono font-bold ${delta >= 0 ? 'text-rose-400' : 'text-cyan-400'}`}>
-            {delta >= 0 ? `+${delta}` : delta} {unit}
+          <div className={`text-xs font-mono font-bold ${Number(delta) >= 0 ? 'text-rose-400' : 'text-cyan-400'}`}>
+            {fmtDelta(delta, 1)} {unit}
           </div>
         </div>
 
         <div className="pt-2 border-t border-slate-700/60 text-[10px] font-mono text-slate-400 flex justify-between">
           <span className="text-slate-400">Baseline Target:</span>
-          <span className="font-bold text-slate-200">{mean.toFixed(1)} ± {stdDev.toFixed(1)} {unit}</span>
+          <span className="font-bold text-slate-200">{fmtNum(mean, 1)} ± {fmtNum(stdDev, 1)} {unit}</span>
         </div>
       </div>
     );
   };
+
+  const stressDelta = (Number.isFinite(current.stress) && Number.isFinite(safeBaseline.stressIndex?.mean))
+    ? Number((current.stress - safeBaseline.stressIndex.mean).toFixed(1))
+    : 0;
 
   return (
     <div className="galaxy-glass-card rounded-2xl p-5 shadow-2xl relative z-20">
@@ -89,10 +121,10 @@ export default function BaselineDeviationHUD() {
 
       {/* Individual Standardized Metric Gauges */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {renderMetricCard("Resting Heart Rate", current.hr, "BPM", baseline.restingHR.mean, baseline.restingHR.stdDev, zScores.hr, deltas.hrDelta, "rose")}
-        {renderMetricCard("Heart Rate Variability", current.hrv, "ms", baseline.hrvRMSSD.mean, baseline.hrvRMSSD.stdDev, zScores.hrv, deltas.hrvDelta, "amber")}
-        {renderMetricCard("Blood Oxygen (SpO2)", current.spo2, "%", baseline.spo2Pct.mean, baseline.spo2Pct.stdDev, zScores.spo2, deltas.spo2Delta, "emerald")}
-        {renderMetricCard("Autonomic Stress", current.stress, "pts", baseline.stressIndex.mean, baseline.stressIndex.stdDev, zScores.stress, Number((current.stress - baseline.stressIndex.mean).toFixed(1)), "indigo")}
+        {renderMetricCard("Resting Heart Rate", current.hr, "BPM", safeBaseline.restingHR?.mean, safeBaseline.restingHR?.stdDev, safeZ.hr, safeDeltas.hrDelta)}
+        {renderMetricCard("Heart Rate Variability", current.hrv, "ms", safeBaseline.hrvRMSSD?.mean, safeBaseline.hrvRMSSD?.stdDev, safeZ.hrv, safeDeltas.hrvDelta)}
+        {renderMetricCard("Blood Oxygen (SpO2)", current.spo2, "%", safeBaseline.spo2Pct?.mean, safeBaseline.spo2Pct?.stdDev, safeZ.spo2, safeDeltas.spo2Delta)}
+        {renderMetricCard("Autonomic Stress", current.stress, "pts", safeBaseline.stressIndex?.mean, safeBaseline.stressIndex?.stdDev, safeZ.stress, stressDelta)}
       </div>
 
     </div>

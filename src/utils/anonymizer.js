@@ -8,31 +8,45 @@ export function generateLsdaPayload(crewMember, telemetryHistory, surveyResponse
   const pseudoHash = "LSDA-EXP-" + btoa(crewMember.id).replace(/[^a-zA-Z0-9]/g, "").slice(0, 8).toUpperCase();
   
   // Calculate aggregated statistical metrics from telemetry window
-  const hrValues = telemetryHistory.map(t => t.hr);
-  const hrvValues = telemetryHistory.map(t => t.hrv);
-  const spo2Values = telemetryHistory.map(t => t.spo2);
-  const stressValues = telemetryHistory.map(t => t.stress);
+  const cleanArr = arr => (Array.isArray(arr) ? arr : []).filter(v => typeof v === 'number' && Number.isFinite(v));
 
-  const mean = arr => arr.length ? Number((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(2)) : 0;
-  const min = arr => arr.length ? Math.min(...arr) : 0;
-  const max = arr => arr.length ? Math.max(...arr) : 0;
+  const mean = arr => {
+    const valid = cleanArr(arr);
+    return valid.length ? Number((valid.reduce((a, b) => a + b, 0) / valid.length).toFixed(2)) : 0;
+  };
+  const min = arr => {
+    const valid = cleanArr(arr);
+    return valid.length ? Math.min(...valid) : 0;
+  };
+  const max = arr => {
+    const valid = cleanArr(arr);
+    return valid.length ? Math.max(...valid) : 0;
+  };
   const stdDev = arr => {
-    if (!arr.length) return 0;
-    const m = mean(arr);
-    const variance = arr.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) / arr.length;
-    return Number(Math.sqrt(variance).toFixed(2));
+    const valid = cleanArr(arr);
+    if (!valid.length) return 0;
+    const m = mean(valid);
+    const variance = valid.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) / valid.length;
+    return Number.isFinite(variance) && variance >= 0 ? Number(Math.sqrt(variance).toFixed(2)) : 0;
   };
 
+  const hrValues = cleanArr(telemetryHistory.map(t => t.hr));
+  const hrvValues = cleanArr(telemetryHistory.map(t => t.hrv));
+  const spo2Values = cleanArr(telemetryHistory.map(t => t.spo2));
+  const stressValues = cleanArr(telemetryHistory.map(t => t.stress));
+
   // Filter survey responses and remove identifying metadata
-  const anonymizedSurveys = surveyResponses.map((s, idx) => ({
+  const anonymizedSurveys = (surveyResponses || []).map((s, idx) => ({
     surveyRecordId: `SURV-ANON-${idx + 101}`,
     surveyType: s.type, // 'SLEEP_QUALITY' or 'POMS_PSYCHOLOGICAL'
-    relativeFlightDay: crewMember.flightDay,
+    relativeFlightDay: crewMember.flightDay ?? 1,
     missionPhase: "ORBITAL_TRANSIT",
-    subjectiveRatings: s.ratings,
-    meanConcurrentHR: s.concurrentHR,
-    meanConcurrentHRV: s.concurrentHRV
+    subjectiveRatings: s.ratings || {},
+    meanConcurrentHR: s.concurrentHR ?? 65,
+    meanConcurrentHRV: s.concurrentHRV ?? 60
   }));
+
+  const safeSuitPressure = Number.isFinite(crewMember.suitPressure) ? crewMember.suitPressure : 14.7;
 
   const payload = {
     archiveMetadata: {
@@ -47,16 +61,16 @@ export function generateLsdaPayload(crewMember, telemetryHistory, surveyResponse
       subjectIdentifier: pseudoHash,
       demographicCohort: "ASTRONAUT_CORPS_ACTIVE",
       flightMissionProfile: "DEEP_SPACE_ANALOG_2026",
-      flightDayEpoch: `FD-${crewMember.flightDay.toString().padStart(3, "0")}`,
-      operationalRoleGroup: crewMember.role.includes("Commander") ? "FLIGHT_COMMAND" : "MISSION_OPERATIONS",
-      suitPressureAtmospheres: Number((crewMember.suitPressure / 14.7).toFixed(2))
+      flightDayEpoch: `FD-${(crewMember.flightDay || 1).toString().padStart(3, "0")}`,
+      operationalRoleGroup: (crewMember.role || "").includes("Commander") ? "FLIGHT_COMMAND" : "MISSION_OPERATIONS",
+      suitPressureAtmospheres: Number((safeSuitPressure / 14.7).toFixed(2))
     },
     aggregatedPhysiologicalMetrics: {
       epochWindowMinutes: 30,
       samplesAnalyzed: telemetryHistory.length,
       heartRate: {
         unit: "BPM",
-        baselineResting: crewMember.baseHR,
+        baselineResting: crewMember.baseHR ?? 65,
         mean: mean(hrValues),
         min: min(hrValues),
         max: max(hrValues),
@@ -64,7 +78,7 @@ export function generateLsdaPayload(crewMember, telemetryHistory, surveyResponse
       },
       heartRateVariability_RMSSD: {
         unit: "ms",
-        baselineResting: crewMember.baseHRV,
+        baselineResting: crewMember.baseHRV ?? 60,
         mean: mean(hrvValues),
         min: min(hrvValues),
         max: max(hrvValues),
@@ -72,7 +86,7 @@ export function generateLsdaPayload(crewMember, telemetryHistory, surveyResponse
       },
       bloodOxygenSaturation_SpO2: {
         unit: "PERCENT",
-        baselineResting: crewMember.baseSpO2,
+        baselineResting: crewMember.baseSpO2 ?? 98,
         mean: mean(spo2Values),
         nadirSpO2: min(spo2Values),
         hypoxicEventsCount: spo2Values.filter(v => v < 90).length
@@ -80,7 +94,7 @@ export function generateLsdaPayload(crewMember, telemetryHistory, surveyResponse
       autonomicStressIndex: {
         scale: "1-100",
         mean: mean(stressValues),
-        peakStrainPeriodPct: Number(((stressValues.filter(v => v > 65).length / (stressValues.length || 1)) * 100).toFixed(1))
+        peakStrainPeriodPct: stressValues.length ? Number(((stressValues.filter(v => v > 65).length / stressValues.length) * 100).toFixed(1)) : 0
       }
     },
     behavioralIntegrationSurveys: anonymizedSurveys,

@@ -9,7 +9,9 @@ export default function BiometricCharts() {
 
   // SVG Chart Helper
   const renderSparkline = (dataKey, strokeColor, label, unit, minVal, maxVal, thresholdLine) => {
-    const values = recentLogs.map(l => l[dataKey] ?? (dataKey === 'activityMets' ? 1.8 : 0));
+    const values = recentLogs
+      .map(l => l[dataKey])
+      .filter(v => typeof v === 'number' && Number.isFinite(v));
     if (!values.length) return null;
 
     const currentVal = values[values.length - 1];
@@ -17,22 +19,26 @@ export default function BiometricCharts() {
     const dataMax = Math.max(...values);
     const computedMin = minVal !== undefined ? minVal : Math.floor(dataMin * 0.95);
     const computedMax = maxVal !== undefined ? maxVal : Math.ceil(dataMax * 1.05);
-    const range = Math.max(0.1, computedMax - computedMin);
+    const range = Math.max(0.1, (Number.isFinite(computedMax) && Number.isFinite(computedMin)) ? computedMax - computedMin : 0.1);
 
     const width = 360;
     const height = 90;
 
+    const denominator = Math.max(1, values.length - 1);
     const points = values.map((val, idx) => {
-      const x = (idx / Math.max(1, values.length - 1)) * width;
+      const x = (idx / denominator) * width;
       const normalizedY = (val - computedMin) / range;
-      const y = height - normalizedY * (height - 14) - 7;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
+      const safeNormY = Number.isFinite(normalizedY) ? normalizedY : 0.5;
+      const y = height - safeNormY * (height - 14) - 7;
+      return `${(Number.isFinite(x) ? x : 0).toFixed(1)},${(Number.isFinite(y) ? y : 0).toFixed(1)}`;
     }).join(' ');
 
     let thresholdY = null;
-    if (thresholdLine !== undefined) {
+    if (thresholdLine !== undefined && Number.isFinite(thresholdLine)) {
       const normThresh = (thresholdLine - computedMin) / range;
-      thresholdY = height - normThresh * (height - 14) - 7;
+      if (Number.isFinite(normThresh)) {
+        thresholdY = height - normThresh * (height - 14) - 7;
+      }
     }
 
     return (

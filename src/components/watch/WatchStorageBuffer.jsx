@@ -4,8 +4,9 @@ import { ChevronLeft, Database, RefreshCw, HardDrive, Check, Radio, Zap } from '
 
 export default function WatchStorageBuffer({ onBack }) {
   const { storageBuffers, activeAstronautId, isCommBlackout, isBurstSyncing, flushStorageBuffers, surveyHistory } = useMission();
-  const bufferCount = storageBuffers[activeAstronautId] || 0;
-  const astroSurveys = surveyHistory.filter(s => s.astronautId === activeAstronautId);
+  const rawBuffer = storageBuffers?.[activeAstronautId];
+  const bufferCount = Number.isFinite(rawBuffer) ? rawBuffer : 0;
+  const astroSurveys = (surveyHistory || []).filter(s => s.astronautId === activeAstronautId);
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-3 text-slate-100 font-mono select-none relative overflow-hidden">

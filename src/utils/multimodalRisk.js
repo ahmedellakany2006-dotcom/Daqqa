@@ -4,39 +4,54 @@
  * and subjective behavioral telemetry (Sleep surveys, POMS psychological check-ins).
  */
 
-export function computeMultimodalRisk(personalizedAnomaly, sensorReliability, surveyHistory, currentMetrics) {
-  const { zScores, baseline } = personalizedAnomaly;
-  const sqi = sensorReliability.sqi;
+export function computeMultimodalRisk(personalizedAnomaly = {}, sensorReliability = {}, surveyHistory = [], currentMetrics = {}) {
+  const zScores = personalizedAnomaly?.zScores || { hr: 0, hrv: 0, spo2: 0 };
+  const safeZ = {
+    hr: (typeof zScores.hr === 'number' && Number.isFinite(zScores.hr)) ? zScores.hr : 0,
+    hrv: (typeof zScores.hrv === 'number' && Number.isFinite(zScores.hrv)) ? zScores.hrv : 0,
+    spo2: (typeof zScores.spo2 === 'number' && Number.isFinite(zScores.spo2)) ? zScores.spo2 : 0
+  };
+  const sqi = (typeof sensorReliability?.sqi === 'number' && Number.isFinite(sensorReliability.sqi)) ? sensorReliability.sqi : 100;
+
+  const safeSurveys = Array.isArray(surveyHistory) ? surveyHistory : [];
+  const safeMetrics = currentMetrics || {};
+  const safeSpO2 = (typeof safeMetrics.spo2 === 'number' && Number.isFinite(safeMetrics.spo2)) ? safeMetrics.spo2 : 98;
+  const safeStress = (typeof safeMetrics.stress === 'number' && Number.isFinite(safeMetrics.stress)) ? safeMetrics.stress : 20;
 
   // Retrieve most recent sleep and psychological surveys
-  const sleepSurvey = surveyHistory.find(s => s.type === "SLEEP_QUALITY");
-  const pomsSurvey = surveyHistory.find(s => s.type === "POMS_PSYCHOLOGICAL");
+  const sleepSurvey = safeSurveys.find(s => s && s.type === "SLEEP_QUALITY");
+  const pomsSurvey = safeSurveys.find(s => s && s.type === "POMS_PSYCHOLOGICAL");
 
-  const sleepQuality = sleepSurvey?.ratings?.sleepQuality ?? 4; // 1 (terrible) - 5 (great)
-  const sleepLatency = sleepSurvey?.ratings?.sleepLatencyMin ?? 15; // min
-  const nightAwakenings = sleepSurvey?.ratings?.nightAwakenings ?? 1;
+  const sleepQuality = Number.isFinite(sleepSurvey?.ratings?.sleepQuality) ? sleepSurvey.ratings.sleepQuality : 4; // 1 (terrible) - 5 (great)
+  const sleepLatency = Number.isFinite(sleepSurvey?.ratings?.sleepLatencyMin) ? sleepSurvey.ratings.sleepLatencyMin : 15; // min
+  const nightAwakenings = Number.isFinite(sleepSurvey?.ratings?.nightAwakenings) ? sleepSurvey.ratings.nightAwakenings : 1;
 
-  const focusScore = pomsSurvey?.ratings?.focusScore ?? 4; // 1 - 5
-  const fatigueScore = pomsSurvey?.ratings?.muscleFatigue ?? 2; // 1 (fresh) - 5 (exhausted)
-  const anxietyScore = pomsSurvey?.ratings?.anxietyLevel ?? 2; // 1 - 5
+  const focusScore = Number.isFinite(pomsSurvey?.ratings?.focusScore) ? pomsSurvey.ratings.focusScore : 4; // 1 - 5
+  const fatigueScore = Number.isFinite(pomsSurvey?.ratings?.muscleFatigue) ? pomsSurvey.ratings.muscleFatigue : 2; // 1 (fresh) - 5 (exhausted)
+  const anxietyScore = Number.isFinite(pomsSurvey?.ratings?.anxietyLevel) ? pomsSurvey.ratings.anxietyLevel : 2; // 1 - 5
 
   // 1. Modality Strain Weights (0 - 100)
   // Autonomic strain: derived from negative HRV z-score
-  const autonomicStrain = Math.min(100, Math.max(0, Math.round(-zScores.hrv * 28 + (currentMetrics.stress || 20) * 0.5)));
+  const rawAutonomic = -safeZ.hrv * 28 + safeStress * 0.5;
+  const autonomicStrain = Math.min(100, Math.max(0, Math.round(Number.isFinite(rawAutonomic) ? rawAutonomic : 20)));
 
   // Cardiovascular strain: derived from positive HR z-score
-  const cardioStrain = Math.min(100, Math.max(0, Math.round(Math.max(0, zScores.hr * 26))));
+  const rawCardio = Math.max(0, safeZ.hr * 26);
+  const cardioStrain = Math.min(100, Math.max(0, Math.round(Number.isFinite(rawCardio) ? rawCardio : 0)));
 
   // Hypoxic strain: derived from SpO2 drop
-  const hypoxicStrain = currentMetrics.spo2 < 90 
-    ? Math.min(100, Math.round((90 - currentMetrics.spo2) * 12 + 40))
-    : Math.min(100, Math.max(0, Math.round(-zScores.spo2 * 20)));
+  const rawHypoxic = safeSpO2 < 90 
+    ? (90 - safeSpO2) * 12 + 40
+    : Math.max(0, -safeZ.spo2 * 20);
+  const hypoxicStrain = Math.min(100, Math.max(0, Math.round(Number.isFinite(rawHypoxic) ? rawHypoxic : 0)));
 
   // Behavioral sleep strain: inverted sleep quality & awakenings
-  const behavioralSleepStrain = Math.min(100, Math.round((5 - sleepQuality) * 18 + nightAwakenings * 8 + (sleepLatency > 20 ? 15 : 0)));
+  const rawSleep = (5 - sleepQuality) * 18 + nightAwakenings * 8 + (sleepLatency > 20 ? 15 : 0);
+  const behavioralSleepStrain = Math.min(100, Math.max(0, Math.round(Number.isFinite(rawSleep) ? rawSleep : 20)));
 
   // Cognitive / POMS psychological strain: fatigue & anxiety
-  const cognitiveStrain = Math.min(100, Math.round((fatigueScore * 12) + (anxietyScore * 10) + (5 - focusScore) * 8));
+  const rawCognitive = (fatigueScore * 12) + (anxietyScore * 10) + (5 - focusScore) * 8;
+  const cognitiveStrain = Math.min(100, Math.max(0, Math.round(Number.isFinite(rawCognitive) ? rawCognitive : 20)));
 
   // 2. Multimodal Convergence Coefficient: Check if strains occur SYNCHRONOUSLY
   // If multiple modalities elevate simultaneously, risk compounds exponentially
@@ -60,8 +75,9 @@ export function computeMultimodalRisk(personalizedAnomaly, sensorReliability, su
   ) * synergyMultiplier;
 
   // If sensor is unreliable, discount false positive spike
-  const reliabilityFactor = sensorReliability.isTrustworthy ? 1.0 : 0.65;
-  const mmrs = Math.min(100, Math.max(0, Math.round(weightedSum * reliabilityFactor)));
+  const reliabilityFactor = sensorReliability?.isTrustworthy !== false ? 1.0 : 0.65;
+  const rawMMRS = weightedSum * reliabilityFactor;
+  const mmrs = Math.min(100, Math.max(0, Math.round(Number.isFinite(rawMMRS) ? rawMMRS : 0)));
 
   // 3. Clinical Syndromic Pattern Diagnosis
   let syndrome = "NOMINAL_PHYSIOLOGICAL_HOMEOSTASIS";

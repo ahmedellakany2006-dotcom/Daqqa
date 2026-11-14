@@ -67,7 +67,7 @@ export default function EnvironmentalHUD() {
             <Thermometer className="w-3.5 h-3.5 text-cyan-400" />
           </div>
           <div className="text-lg font-black text-white font-mono mt-0.5">
-            {activeAstronaut.current.skinTemp} °C
+            {Number.isFinite(activeAstronaut?.current?.skinTemp) ? activeAstronaut.current.skinTemp : 36.6} °C
           </div>
           <div className="text-[10px] text-slate-400 font-mono font-medium mt-1">
             Thermal equilibrium ok

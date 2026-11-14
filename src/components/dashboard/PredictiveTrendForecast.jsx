@@ -4,28 +4,49 @@ import { TrendingUp, AlertCircle, Clock, Sparkles, Shield, ArrowUpRight, ArrowDo
 
 export default function PredictiveTrendForecast() {
   const { trendForecast } = useMission();
-  const { currentRecoveryIndex, deteriorationProb24h, hrSlope, hrvSlope, forecastPoints, preventiveCountermeasures, modelConfidenceScore, algorithm } = trendForecast;
+  const { 
+    currentRecoveryIndex = 80, 
+    deteriorationProb24h = 4, 
+    hrSlope = 0, 
+    hrvSlope = 0, 
+    forecastPoints = [], 
+    preventiveCountermeasures = [], 
+    modelConfidenceScore = 95, 
+    algorithm = "ARIMA-Kalman" 
+  } = trendForecast || {};
 
   // Build SVG Points for Forecast Trajectory
   const svgWidth = 520;
   const svgHeight = 110;
 
-  const points = forecastPoints.map((pt, idx) => {
-    const x = (idx / (forecastPoints.length - 1)) * (svgWidth - 40) + 20;
-    const y = svgHeight - (pt.predictedRecovery / 100) * (svgHeight - 30) - 15;
-    return { x, y, pt };
+  const validPoints = Array.isArray(forecastPoints) && forecastPoints.length > 0
+    ? forecastPoints
+    : [{ hour: '+0h', predictedRecovery: 80, confidenceLower: 75, confidenceUpper: 85 }];
+
+  const denominator = Math.max(1, validPoints.length - 1);
+  const points = validPoints.map((pt, idx) => {
+    const x = (idx / denominator) * (svgWidth - 40) + 20;
+    const safeRec = Number.isFinite(pt.predictedRecovery) ? pt.predictedRecovery : 80;
+    const y = svgHeight - (safeRec / 100) * (svgHeight - 30) - 15;
+    return { 
+      x: Number.isFinite(x) ? x : 20, 
+      y: Number.isFinite(y) ? y : svgHeight / 2, 
+      pt 
+    };
   });
 
   const polylineStr = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
   // Shaded confidence band polygon
   const upperPoints = points.map(p => {
-    const y = svgHeight - (p.pt.confidenceUpper / 100) * (svgHeight - 30) - 15;
-    return `${p.x.toFixed(1)},${y.toFixed(1)}`;
+    const safeUpper = Number.isFinite(p.pt.confidenceUpper) ? p.pt.confidenceUpper : 85;
+    const y = svgHeight - (safeUpper / 100) * (svgHeight - 30) - 15;
+    return `${p.x.toFixed(1)},${(Number.isFinite(y) ? y : svgHeight / 2).toFixed(1)}`;
   });
   const lowerPoints = points.map(p => {
-    const y = svgHeight - (p.pt.confidenceLower / 100) * (svgHeight - 30) - 15;
-    return `${p.x.toFixed(1)},${y.toFixed(1)}`;
+    const safeLower = Number.isFinite(p.pt.confidenceLower) ? p.pt.confidenceLower : 75;
+    const y = svgHeight - (safeLower / 100) * (svgHeight - 30) - 15;
+    return `${p.x.toFixed(1)},${(Number.isFinite(y) ? y : svgHeight / 2).toFixed(1)}`;
   }).reverse();
   const polygonStr = `${upperPoints.join(' ')} ${lowerPoints.join(' ')}`;
 

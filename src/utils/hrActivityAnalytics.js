@@ -57,13 +57,17 @@ export const ACTIVITY_CATEGORIES = {
  * Based on learned resting HR baseline and estimated maximum HR for astronauts (typically ~185 - 195 bpm).
  */
 export function calculateExpectedHR(baseRHR, currentMets, maxHR = 185) {
-  const clampedMets = Math.max(1.0, Math.min(9.5, currentMets));
+  const safeBaseRHR = (typeof baseRHR === 'number' && Number.isFinite(baseRHR)) ? baseRHR : 65;
+  const safeMets = (typeof currentMets === 'number' && Number.isFinite(currentMets)) ? currentMets : 1.2;
+  const safeMaxHR = (typeof maxHR === 'number' && Number.isFinite(maxHR)) ? maxHR : 185;
+
+  const clampedMets = Math.max(1.0, Math.min(9.5, safeMets));
   // Normalized exertion fraction from 1.0 (rest) to 8.5 (max operational METs)
   const exertionFraction = Math.max(0, Math.min(1.0, (clampedMets - 1.0) / 7.5));
   
   // Karvonen formula: HR_expected = RHR + (HR_max - RHR) * exertionFraction
-  const expectedHR = baseRHR + (maxHR - baseRHR) * exertionFraction;
-  return Math.round(expectedHR);
+  const expectedHR = safeBaseRHR + (safeMaxHR - safeBaseRHR) * exertionFraction;
+  return Number.isFinite(expectedHR) ? Math.round(expectedHR) : Math.round(safeBaseRHR);
 }
 
 /**
@@ -71,25 +75,31 @@ export function calculateExpectedHR(baseRHR, currentMets, maxHR = 185) {
  * Detects physiological coupling versus acute uncoupling (e.g., inappropriate tachycardia).
  */
 export function evaluateHRActivityConcordance(currentHR, baseRHR, currentMets, currentSpO2 = 98) {
-  const expectedHR = calculateExpectedHR(baseRHR, currentMets);
-  const hrDeltaFromRest = currentHR - baseRHR;
-  const hrDeltaFromExpected = currentHR - expectedHR;
+  const safeBaseRHR = (typeof baseRHR === 'number' && Number.isFinite(baseRHR)) ? baseRHR : 65;
+  const safeHR = (typeof currentHR === 'number' && Number.isFinite(currentHR)) ? currentHR : safeBaseRHR;
+  const safeMets = (typeof currentMets === 'number' && Number.isFinite(currentMets)) ? currentMets : 1.2;
+  const safeSpO2 = (typeof currentSpO2 === 'number' && Number.isFinite(currentSpO2)) ? currentSpO2 : 98;
+
+  const expectedHR = calculateExpectedHR(safeBaseRHR, safeMets);
+  const hrDeltaFromRest = safeHR - safeBaseRHR;
+  const hrDeltaFromExpected = safeHR - expectedHR;
 
   // Exertion Strain Ratio (ESR): Ratio of actual HR increase to expected HR increase
-  const expectedElevation = Math.max(8, expectedHR - baseRHR);
-  const actualElevation = Math.max(0, currentHR - baseRHR);
-  const exertionStrainRatio = Number((actualElevation / expectedElevation).toFixed(2));
+  const expectedElevation = Math.max(8, expectedHR - safeBaseRHR);
+  const actualElevation = Math.max(0, safeHR - safeBaseRHR);
+  const rawESR = actualElevation / expectedElevation;
+  const exertionStrainRatio = Number.isFinite(rawESR) ? Number(rawESR.toFixed(2)) : 1.0;
 
   // Determine concordance status
   let status = "CONCORDANT";
   let severity = "normal";
   let clinicalDiagnosis = "Normal physiological cardiorespiratory coupling. Heart rate matches metabolic demand.";
 
-  if (currentMets <= 2.0 && currentHR > (baseRHR + 35)) {
+  if (safeMets <= 2.0 && safeHR > (safeBaseRHR + 35)) {
     // UNCOUPLED: High HR during low physical activity
     status = "INAPPROPRIATE_TACHYCARDIA_UNCOUPLED";
     severity = "critical";
-    if (currentSpO2 < 91) {
+    if (safeSpO2 < 91) {
       clinicalDiagnosis = "CRITICAL: Acute Hypoxic Tachycardia uncoupling! Heart rate is elevated to compensate for low SpO2 while astronaut is sedentary.";
     } else {
       clinicalDiagnosis = "ALERT: Inappropriate Tachycardia at rest. Possible autonomic distress, acute anxiety/panic, or paroxysmal arrhythmia.";
@@ -99,7 +109,7 @@ export function evaluateHRActivityConcordance(currentHR, baseRHR, currentMets, c
     status = "EXERTIONAL_STRAIN_DRIFT";
     severity = "warning";
     clinicalDiagnosis = "Elevated cardiac cost for current workload. Suggests cardiovascular deconditioning, dehydration, or heat accumulation.";
-  } else if (currentMets >= 5.5 && currentHR < (baseRHR + 20)) {
+  } else if (safeMets >= 5.5 && safeHR < (safeBaseRHR + 20)) {
     // CHRONOTROPIC INCOMPETENCE: High activity, but HR fails to rise
     status = "CHRONOTROPIC_INCOMPETENCE";
     severity = "critical";
@@ -116,7 +126,9 @@ export function evaluateHRActivityConcordance(currentHR, baseRHR, currentMets, c
 
   // Cardio-Oxygen Saturation Index (COSI): SpO2 / HR * 100
   // Normal resting range: ~1.40 - 1.70. Under hypoxia + tachycardia: drops below 0.85
-  const cosi = Number(((currentSpO2 / Math.max(40, currentHR)) * 100).toFixed(2));
+  const hrDenominator = Math.max(40, safeHR);
+  const rawCOSI = (safeSpO2 / hrDenominator) * 100;
+  const cosi = Number.isFinite(rawCOSI) ? Number(rawCOSI.toFixed(2)) : 1.40;
 
   return {
     expectedHR,
@@ -134,24 +146,31 @@ export function evaluateHRActivityConcordance(currentHR, baseRHR, currentMets, c
  * Computes moving window resting heart rate (RHR) filtered strictly during low-activity intervals
  */
 export function computeRestingHRWindow(telemetryLogs, baseRHR) {
+  const safeBaseRHR = (typeof baseRHR === 'number' && Number.isFinite(baseRHR)) ? baseRHR : 65;
+
   if (!telemetryLogs || !telemetryLogs.length) {
     return {
-      baselineRHR: baseRHR,
-      currentRHR: baseRHR,
+      baselineRHR: safeBaseRHR,
+      currentRHR: safeBaseRHR,
       deltaRHR: 0,
       status: "STABLE_BASELINE"
     };
   }
 
   // Filter samples where activity was resting or light (METs <= 1.8)
-  const restingSamples = telemetryLogs.filter(t => (t.activityMets ?? 1.5) <= 1.8);
-  const targetSamples = restingSamples.length >= 3 ? restingSamples : telemetryLogs.slice(-10);
+  const validLogs = (Array.isArray(telemetryLogs) ? telemetryLogs : []).filter(t => t != null);
+  const restingSamples = validLogs.filter(t => typeof t === 'object' && (t.activityMets ?? 1.5) <= 1.8);
+  const targetSamples = restingSamples.length >= 3 ? restingSamples : validLogs.slice(-10);
 
   // Take the 10th percentile (robust nadir) as measured resting HR
-  const sortedHR = targetSamples.map(s => s.hr).sort((a, b) => a - b);
-  const nadirIndex = Math.floor(sortedHR.length * 0.1);
-  const currentRHR = sortedHR[nadirIndex] || baseRHR;
-  const deltaRHR = currentRHR - baseRHR;
+  const sortedHR = targetSamples
+    .map(s => (typeof s === 'object' ? s?.hr : s))
+    .filter(h => typeof h === 'number' && Number.isFinite(h))
+    .sort((a, b) => a - b);
+
+  const nadirIndex = sortedHR.length ? Math.floor(sortedHR.length * 0.1) : 0;
+  const currentRHR = sortedHR.length ? sortedHR[nadirIndex] : safeBaseRHR;
+  const deltaRHR = currentRHR - safeBaseRHR;
 
   let status = "STABLE_BASELINE";
   if (deltaRHR >= 10) {
@@ -163,7 +182,7 @@ export function computeRestingHRWindow(telemetryLogs, baseRHR) {
   }
 
   return {
-    baselineRHR: baseRHR,
+    baselineRHR: safeBaseRHR,
     currentRHR,
     deltaRHR,
     status
@@ -174,8 +193,9 @@ export function computeRestingHRWindow(telemetryLogs, baseRHR) {
  * Returns Category Object for a given METs value
  */
 export function getActivityCategory(mets) {
-  if (mets < 1.6) return ACTIVITY_CATEGORIES.REST;
-  if (mets < 3.0) return ACTIVITY_CATEGORIES.LIGHT_IVA;
-  if (mets < 6.0) return ACTIVITY_CATEGORIES.MODERATE_WORK;
+  const safeMets = (typeof mets === 'number' && Number.isFinite(mets)) ? mets : 1.0;
+  if (safeMets < 1.6) return ACTIVITY_CATEGORIES.REST;
+  if (safeMets < 3.0) return ACTIVITY_CATEGORIES.LIGHT_IVA;
+  if (safeMets < 6.0) return ACTIVITY_CATEGORIES.MODERATE_WORK;
   return ACTIVITY_CATEGORIES.VIGOROUS_EVA;
 }

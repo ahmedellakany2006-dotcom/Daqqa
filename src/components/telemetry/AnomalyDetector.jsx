@@ -4,14 +4,19 @@ import { AlertCircle, ShieldAlert, CheckCircle, Activity, Brain, Flame } from 'l
 
 export default function AnomalyDetector() {
   const { activeAstronaut } = useMission();
-  const m = activeAstronaut.current;
+  const m = activeAstronaut?.current || {};
+  const spo2 = Number.isFinite(m.spo2) ? m.spo2 : 98.4;
+  const hr = Number.isFinite(m.hr) ? m.hr : 65;
+  const fatigue = Number.isFinite(m.fatigue) ? m.fatigue : 15;
+  const stress = Number.isFinite(m.stress) ? m.stress : 20;
+  const hrv = Number.isFinite(m.hrv) ? m.hrv : 60;
 
   // Diagnostic algorithms
-  const isHypoxic = m.spo2 < 90;
-  const isTachycardia = m.hr > 140;
-  const isSevereFatigue = m.fatigue > 70;
-  const isHighStress = m.stress > 70;
-  const isHrvSuppressed = m.hrv < 25;
+  const isHypoxic = spo2 < 90;
+  const isTachycardia = hr > 140;
+  const isSevereFatigue = fatigue > 70;
+  const isHighStress = stress > 70;
+  const isHrvSuppressed = hrv < 25;
 
   return (
     <div className="galaxy-glass-card rounded-2xl p-4 lg:p-5 shadow-2xl relative z-20">
@@ -48,13 +53,13 @@ export default function AnomalyDetector() {
             </div>
             <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
               {isHypoxic
-                ? `Immediate SpO2 drop to ${m.spo2}%. Risk of acute micro-decompression or scrubber failure.`
-                : `Oxygenation saturation stable at ${m.spo2}%. Cabin O2 partial pressure verified.`}
+                ? `Immediate SpO2 drop to ${spo2}%. Risk of acute micro-decompression or scrubber failure.`
+                : `Oxygenation saturation stable at ${spo2}%. Cabin O2 partial pressure verified.`}
             </p>
           </div>
           <div className="mt-2.5 pt-2 border-t border-slate-700/60 font-mono text-[10px] text-slate-400 flex justify-between">
             <span>Threshold: &lt;90%</span>
-            <span className={isHypoxic ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>{m.spo2}% SpO2</span>
+            <span className={isHypoxic ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>{spo2}% SpO2</span>
           </div>
         </div>
 
@@ -75,13 +80,13 @@ export default function AnomalyDetector() {
             </div>
             <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
               {isSevereFatigue
-                ? `Fatigue index at ${m.fatigue}%. Extended microgravity countermeasure or EVA exertion flagged.`
-                : `Fatigue score at ${m.fatigue}%. Muscle metabolic recovery within expected boundaries.`}
+                ? `Fatigue index at ${fatigue}%. Extended microgravity countermeasure or EVA exertion flagged.`
+                : `Fatigue score at ${fatigue}%. Muscle metabolic recovery within expected boundaries.`}
             </p>
           </div>
           <div className="mt-2.5 pt-2 border-t border-slate-700/60 font-mono text-[10px] text-slate-400 flex justify-between">
             <span>Limit: &gt;70%</span>
-            <span className={isSevereFatigue ? 'text-amber-400 font-bold' : 'text-slate-200 font-bold'}>{m.fatigue}% Index</span>
+            <span className={isSevereFatigue ? 'text-amber-400 font-bold' : 'text-slate-200 font-bold'}>{fatigue}% Index</span>
           </div>
         </div>
 
@@ -102,13 +107,13 @@ export default function AnomalyDetector() {
             </div>
             <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
               {(isHighStress || isHrvSuppressed)
-                ? `Sympathovagal imbalance: HRV at ${m.hrv} ms. High sympathetic cortisol activation.`
-                : `Vagal tone intact: RMSSD ${m.hrv} ms. Rest and cognitive load well balanced.`}
+                ? `Sympathovagal imbalance: HRV at ${hrv} ms. High sympathetic cortisol activation.`
+                : `Vagal tone intact: RMSSD ${hrv} ms. Rest and cognitive load well balanced.`}
             </p>
           </div>
           <div className="mt-2.5 pt-2 border-t border-slate-700/60 font-mono text-[10px] text-slate-400 flex justify-between">
             <span>HRV Baseline: {activeAstronaut.baseHRV} ms</span>
-            <span className={(isHighStress || isHrvSuppressed) ? 'text-indigo-400 font-bold' : 'text-cyan-400 font-bold'}>{m.hrv} ms</span>
+            <span className={(isHighStress || isHrvSuppressed) ? 'text-indigo-400 font-bold' : 'text-cyan-400 font-bold'}>{hrv} ms</span>
           </div>
         </div>
 

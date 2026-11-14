@@ -244,7 +244,7 @@ export default function GalaxyBackground({ activeTab = 'simulator' }) {
       <div 
         className="absolute top-16 right-4 sm:right-12 lg:right-20 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[460px] lg:h-[460px] pointer-events-none"
         style={{
-          transform: `translate3d(0, ${smoothY.toFixed(2)}px, 0)`,
+          transform: `translate3d(0, ${(Number.isFinite(smoothY) ? smoothY : 0).toFixed(2)}px, 0)`,
           willChange: 'transform'
         }}
       >

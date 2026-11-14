@@ -5,7 +5,8 @@ import { Activity } from 'lucide-react';
 export default function RealtimeECGCanvas() {
   const canvasRef = useRef(null);
   const { activeAstronaut } = useMission();
-  const hr = activeAstronaut.current.hr || 68;
+  const rawHR = activeAstronaut?.current?.hr;
+  const hr = Number.isFinite(rawHR) && rawHR > 0 ? rawHR : 68;
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -28,7 +29,8 @@ export default function RealtimeECGCanvas() {
       const midY = height / 2;
 
       // Calculate ECG cycle frequency based on HR
-      const beatPeriod = Math.max(20, Math.round(3600 / hr));
+      const safeHR = Number.isFinite(hr) && hr > 0 ? hr : 68;
+      const beatPeriod = Math.max(20, Math.round(3600 / safeHR));
       const cyclePos = step % beatPeriod;
 
       let sampleY = midY;

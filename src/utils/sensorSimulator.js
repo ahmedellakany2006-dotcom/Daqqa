@@ -4,7 +4,7 @@
  * Synchronous dual-stream telemetry: HR and SpO2 co-registered at the exact same moment.
  */
 
-import { evaluateHRActivityConcordance, getActivityCategory } from './hrActivityAnalytics';
+import { evaluateHRActivityConcordance, getActivityCategory } from './hrActivityAnalytics.js';
 
 export const INITIAL_CREW = [
   {
@@ -237,8 +237,10 @@ export const MISSION_SCENARIOS = {
  * Generate next physiological tick
  * Ensures strict synchronous pairing between Heart Rate (PPG) and SpO2 (Pulse Ox)
  */
-export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout, manualMetsOverride = null) {
+export function generateSensorTick(astronaut, scenario, prevMetrics = {}, isBlackout, manualMetsOverride = null) {
   const scen = MISSION_SCENARIOS[scenario] || MISSION_SCENARIOS.NOMINAL;
+  const safeAstro = astronaut || { baseHR: 65, baseHRV: 60, baseSpO2: 98.4 };
+  const safePrev = prevMetrics || {};
   
   // Random jitter
   const jitterHR = (Math.random() - 0.5) * 3;
@@ -246,15 +248,20 @@ export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout,
   const jitterSpO2 = (Math.random() - 0.5) * 0.4;
   
   // Target values based on scenario and baseline
-  const targetHR = astronaut.baseHR + scen.hrDelta + jitterHR;
-  const targetHRV = Math.max(12, astronaut.baseHRV * scen.hrvFactor + jitterHRV);
-  const targetSpO2 = Math.min(100, Math.max(82, scen.spo2Target + jitterSpO2));
-  const targetStress = Math.min(100, Math.max(5, scen.stressTarget + (Math.random() - 0.5) * 6));
-  const targetFatigue = Math.min(100, Math.max(5, scen.fatigueTarget + (Math.random() - 0.5) * 4));
+  const baseHR = Number.isFinite(safeAstro.baseHR) ? safeAstro.baseHR : 65;
+  const baseHRV = Number.isFinite(safeAstro.baseHRV) ? safeAstro.baseHRV : 60;
+  const baseSpO2 = Number.isFinite(safeAstro.baseSpO2) ? safeAstro.baseSpO2 : 98.4;
+
+  const targetHR = baseHR + (scen.hrDelta || 0) + jitterHR;
+  const targetHRV = Math.max(12, baseHRV * (scen.hrvFactor || 1.0) + jitterHRV);
+  const targetSpO2 = Math.min(100, Math.max(82, (scen.spo2Target || 98.5) + jitterSpO2));
+  const targetStress = Math.min(100, Math.max(5, (scen.stressTarget || 24) + (Math.random() - 0.5) * 6));
+  const targetFatigue = Math.min(100, Math.max(5, (scen.fatigueTarget || 18) + (Math.random() - 0.5) * 4));
 
   // Activity METs calculation (support manual test override or scenario default)
-  const targetMets = manualMetsOverride !== null ? manualMetsOverride : scen.baseMets + (Math.random() - 0.5) * 0.25;
-  const currentMets = Number((prevMetrics.activityMets + (targetMets - prevMetrics.activityMets) * 0.2).toFixed(2));
+  const targetMets = manualMetsOverride !== null ? manualMetsOverride : (scen.baseMets || 1.8) + (Math.random() - 0.5) * 0.25;
+  const prevMets = Number.isFinite(safePrev.activityMets) ? safePrev.activityMets : (scen.baseMets || 1.8);
+  const currentMets = Number((prevMets + (targetMets - prevMets) * 0.2).toFixed(2));
   const activityCategory = getActivityCategory(currentMets);
   const currentIntensity = Math.round(Math.min(100, Math.max(5, ((currentMets - 1.0) / 7.5) * 100)));
 
@@ -262,14 +269,20 @@ export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout,
   const accelMagnitude = Number((0.98 + (currentMets / 9.0) * 1.2 + (Math.random() - 0.5) * 0.08).toFixed(2));
 
   // Smooth lerp
-  const currentHR = Math.round(prevMetrics.hr + (targetHR - prevMetrics.hr) * 0.25);
-  const currentHRV = Math.round(prevMetrics.hrv + (targetHRV - prevMetrics.hrv) * 0.2);
-  const currentSpO2 = Number((prevMetrics.spo2 + (targetSpO2 - prevMetrics.spo2) * 0.2).toFixed(1));
-  const currentStress = Math.round(prevMetrics.stress + (targetStress - prevMetrics.stress) * 0.2);
-  const currentFatigue = Math.round(prevMetrics.fatigue + (targetFatigue - prevMetrics.fatigue) * 0.15);
+  const prevHR = Number.isFinite(safePrev.hr) ? safePrev.hr : baseHR;
+  const prevHRV = Number.isFinite(safePrev.hrv) ? safePrev.hrv : baseHRV;
+  const prevSpO2 = Number.isFinite(safePrev.spo2) ? safePrev.spo2 : baseSpO2;
+  const prevStress = Number.isFinite(safePrev.stress) ? safePrev.stress : 24;
+  const prevFatigue = Number.isFinite(safePrev.fatigue) ? safePrev.fatigue : 18;
+
+  const currentHR = Math.round(prevHR + (targetHR - prevHR) * 0.25);
+  const currentHRV = Math.round(prevHRV + (targetHRV - prevHRV) * 0.2);
+  const currentSpO2 = Number((prevSpO2 + (targetSpO2 - prevSpO2) * 0.2).toFixed(1));
+  const currentStress = Math.round(prevStress + (targetStress - prevStress) * 0.2);
+  const currentFatigue = Math.round(prevFatigue + (targetFatigue - prevFatigue) * 0.15);
 
   // Evaluate Cardiorespiratory Concordance (HR vs Activity)
-  const concordance = evaluateHRActivityConcordance(currentHR, astronaut.baseHR, currentMets, currentSpO2);
+  const concordance = evaluateHRActivityConcordance(currentHR, baseHR, currentMets, currentSpO2);
 
   // Status computation
   let status = "NOMINAL";
@@ -319,8 +332,8 @@ export function generateSensorTick(astronaut, scenario, prevMetrics, isBlackout,
     activityIntensity: currentIntensity,
     accelMagnitude,
     // Resting HR & Exertion dynamics
-    restingHRBaseline: astronaut.baseHR,
-    hrDeltaResting: currentHR - astronaut.baseHR,
+    restingHRBaseline: baseHR,
+    hrDeltaResting: (Number.isFinite(currentHR) && Number.isFinite(baseHR)) ? (currentHR - baseHR) : 0,
     expectedHR: concordance.expectedHR,
     exertionStrainRatio: concordance.exertionStrainRatio,
     concordanceStatus: concordance.concordanceStatus,

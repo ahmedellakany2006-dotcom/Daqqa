@@ -18,17 +18,19 @@ export default function WatchFaceHUD({ onOpenSurveys, onOpenGraph, onOpenStorage
     return () => clearInterval(timer);
   }, []);
 
-  const metrics = activeAstronaut.current;
+  const metrics = activeAstronaut?.current || {};
   const bufferCount = storageBuffers[activeAstronautId] || 0;
 
   // Pulse animation rate based on heart rate
-  const pulseDuration = Math.max(0.35, (60 / (metrics.hr || 70))).toFixed(2);
+  const safeHR = Number.isFinite(metrics.hr) && metrics.hr > 0 ? metrics.hr : 70;
+  const pulseDuration = Math.max(0.35, (60 / safeHR)).toFixed(2);
 
   // Seconds arc calculation
-  const secStrokeDash = ((secondNumber / 60) * 880).toFixed(1);
+  const safeSec = Number.isFinite(secondNumber) ? secondNumber : 0;
+  const secStrokeDash = ((safeSec / 60) * 880).toFixed(1);
 
-  const hrZ = personalizedAnomaly?.zScores?.hr ?? 0;
-  const sqiVal = sensorReliability?.sqi ?? 96;
+  const hrZ = Number.isFinite(personalizedAnomaly?.zScores?.hr) ? personalizedAnomaly.zScores.hr : 0;
+  const sqiVal = Number.isFinite(sensorReliability?.sqi) ? sensorReliability.sqi : 96;
 
   return (
     <div className="w-full h-full flex flex-col items-center justify-center p-3 select-none relative text-slate-100 font-mono overflow-hidden">
