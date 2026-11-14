@@ -8,57 +8,83 @@ export default function RealtimeECGCanvas() {
   const rawHR = activeAstronaut?.current?.hr;
   const hr = Number.isFinite(rawHR) && rawHR > 0 ? rawHR : 68;
 
+  const hrRef = useRef(hr);
+  useEffect(() => {
+    hrRef.current = hr;
+  }, [hr]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
     let animationFrameId;
+    let phase = 0;
     let step = 0;
     const points = [];
     const maxPoints = canvas.width || 800;
+    const midY = canvas.height / 2;
 
-    // Fill initial baseline
+    // Helper: Synthesize realistic Lead II P-Q-R-S-T cardiac waveform
+    const getECGSample = (pNorm, baselineY) => {
+      let y = baselineY;
+      const p = ((pNorm % 1) + 1) % 1; // strictly normalize [0, 1)
+
+      if (p >= 0.12 && p < 0.22) {
+        // P-wave (smooth rounded atrial depolarization)
+        const norm = (p - 0.12) / 0.10;
+        y -= Math.sin(norm * Math.PI) * 11;
+      } else if (p >= 0.28 && p < 0.305) {
+        // Q-dip (septal depolarization)
+        const norm = (p - 0.28) / 0.025;
+        y += Math.sin(norm * Math.PI) * 7;
+      } else if (p >= 0.305 && p < 0.345) {
+        // R-spike (ventricular depolarization - sharp triangular peak)
+        const tri = 1 - Math.abs((p - 0.325) / 0.02);
+        y -= 56 * Math.pow(Math.max(0, tri), 1.25);
+      } else if (p >= 0.345 && p < 0.375) {
+        // S-dip (ventricular depolarization end)
+        const norm = (p - 0.345) / 0.03;
+        y += Math.sin(norm * Math.PI) * 16;
+      } else if (p >= 0.44 && p < 0.62) {
+        // T-wave (ventricular repolarization - smooth rounded)
+        const norm = (p - 0.44) / 0.18;
+        y -= Math.sin(norm * Math.PI) * 15 * (1 + 0.25 * Math.cos(norm * Math.PI));
+      }
+
+      return y;
+    };
+
+    // Pre-populate entire canvas with continuous, active cardiac cycles (NO flatline on mount)
+    const initialHR = Number.isFinite(hrRef.current) && hrRef.current > 0 ? hrRef.current : 68;
+    const initialBeatWidth = (60 / initialHR) * 160;
     for (let i = 0; i < maxPoints; i++) {
-      points.push(canvas.height / 2);
+      const p = (i / initialBeatWidth) % 1.0;
+      points.push(getECGSample(p, midY));
     }
 
     const render = () => {
       const width = canvas.width;
       const height = canvas.height;
-      const midY = height / 2;
+      const baselineMidY = height / 2;
 
-      // Calculate ECG cycle frequency based on HR
-      const safeHR = Number.isFinite(hr) && hr > 0 ? hr : 68;
-      const beatPeriod = Math.max(20, Math.round(3600 / safeHR));
-      const cyclePos = step % beatPeriod;
+      // Dynamically read current HR from ref without restarting the animation loop
+      const currentHR = Number.isFinite(hrRef.current) && hrRef.current > 0 ? hrRef.current : 68;
+      
+      // Proportional beat width: at 60 BPM = 160px; advance by 1.6px per frame at 60 FPS
+      const beatWidth = (60 / currentHR) * 160;
+      const deltaPhase = 1.6 / beatWidth;
 
-      let sampleY = midY;
+      phase = (phase + deltaPhase) % 1.0;
+      step++;
 
-      // Synthesize realistic P-Q-R-S-T cardiac waveform
-      const p = cyclePos / beatPeriod;
-      if (p > 0.15 && p < 0.22) {
-        // P-wave
-        sampleY -= Math.sin(((p - 0.15) / 0.07) * Math.PI) * 12;
-      } else if (p >= 0.27 && p < 0.29) {
-        // Q-dip
-        sampleY += 8;
-      } else if (p >= 0.29 && p < 0.33) {
-        // R-spike
-        sampleY -= 55;
-      } else if (p >= 0.33 && p < 0.36) {
-        // S-dip
-        sampleY += 18;
-      } else if (p > 0.45 && p < 0.60) {
-        // T-wave
-        sampleY -= Math.sin(((p - 0.45) / 0.15) * Math.PI) * 16;
-      }
-
-      // Small physiological jitter
-      sampleY += (Math.random() - 0.5) * 1.5;
+      // Subtle physiological respiratory baseline wander (0.15 Hz) & micro-noise
+      const respWander = Math.sin(step * 0.015) * 1.5;
+      const jitter = (Math.random() - 0.5) * 0.8;
+      const sampleY = getECGSample(phase, baselineMidY) + respWander + jitter;
 
       points.push(sampleY);
-      if (points.length > width) {
+      while (points.length > width) {
         points.shift();
       }
 
@@ -66,25 +92,39 @@ export default function RealtimeECGCanvas() {
       ctx.fillStyle = '#050A14';
       ctx.fillRect(0, 0, width, height);
 
-      // Grid lines
-      ctx.strokeStyle = 'rgba(0, 240, 255, 0.08)';
-      ctx.lineWidth = 1;
-      const gridSize = 20;
-
-      for (let x = 0; x < width; x += gridSize) {
+      // Minor grid lines (every 10px)
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.04)';
+      ctx.lineWidth = 0.5;
+      for (let x = 0; x < width; x += 10) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
         ctx.lineTo(x, height);
         ctx.stroke();
       }
-      for (let y = 0; y < height; y += gridSize) {
+      for (let y = 0; y < height; y += 10) {
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(width, y);
         ctx.stroke();
       }
 
-      // Draw ECG lead waveform
+      // Major grid lines (every 40px)
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.12)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = 0; y < height; y += 40) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // Draw continuous ECG lead waveform
       ctx.strokeStyle = '#00F0FF';
       ctx.shadowColor = '#00F0FF';
       ctx.shadowBlur = 8;
@@ -92,10 +132,11 @@ export default function RealtimeECGCanvas() {
       ctx.beginPath();
 
       for (let i = 0; i < points.length; i++) {
+        const pt = Number.isFinite(points[i]) ? points[i] : baselineMidY;
         if (i === 0) {
-          ctx.moveTo(i, points[i]);
+          ctx.moveTo(i, pt);
         } else {
-          ctx.lineTo(i, points[i]);
+          ctx.lineTo(i, pt);
         }
       }
       ctx.stroke();
@@ -105,7 +146,7 @@ export default function RealtimeECGCanvas() {
 
       // Sweep glow dot at lead tip
       const lastX = points.length - 1;
-      const lastY = points[lastX];
+      const lastY = Number.isFinite(points[lastX]) ? points[lastX] : baselineMidY;
       ctx.fillStyle = '#FFFFFF';
       ctx.shadowColor = '#00F0FF';
       ctx.shadowBlur = 12;
@@ -114,7 +155,6 @@ export default function RealtimeECGCanvas() {
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      step++;
       animationFrameId = requestAnimationFrame(render);
     };
 
@@ -123,7 +163,7 @@ export default function RealtimeECGCanvas() {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [hr]);
+  }, []); // Run on mount only: continuous, uninterrupted 60 FPS loop
 
   return (
     <div className="galaxy-glass-card rounded-2xl p-4 sm:p-5 shadow-2xl relative z-20">
