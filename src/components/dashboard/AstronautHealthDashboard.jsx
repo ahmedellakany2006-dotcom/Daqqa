@@ -36,24 +36,24 @@ export default function AstronautHealthDashboard() {
     <div className="space-y-6 relative z-20">
       
       {/* Executive Command Banner */}
-      <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm backdrop-blur-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="galaxy-glass-card border border-slate-700/60 rounded-2xl p-5 sm:p-6 shadow-2xl backdrop-blur-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 font-mono font-bold border border-sky-300">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 font-mono font-bold border border-cyan-500/40">
               NASA CLINICAL INTELLIGENCE
             </span>
-            <span className="text-xs text-slate-500 font-mono font-medium">
+            <span className="text-xs text-slate-400 font-mono font-medium">
               Spaceflight Health Monitoring
             </span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold border border-emerald-300">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 font-mono font-bold border border-emerald-500/40">
               SYNCHRONOUS PPG & PULSE OX
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+          <h2 className="text-xl sm:text-2xl font-black text-white font-mono drop-shadow-md">
             Astronaut Health Intelligence & Exertion Dashboard
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 mt-1 font-medium">
-            Active Patient: <strong className="text-sky-800">{activeAstronaut.name}</strong> ({activeAstronaut.role} • {activeAstronaut.agency}) • Flight Day {activeAstronaut.flightDay}
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 font-medium">
+            Active Patient: <strong className="text-cyan-400">{activeAstronaut.name}</strong> ({activeAstronaut.role} • {activeAstronaut.agency}) • Flight Day {activeAstronaut.flightDay}
           </p>
         </div>
 
@@ -121,14 +121,14 @@ export default function AstronautHealthDashboard() {
       </div>
 
       {/* CSV Accuracy & Precision Verification Banner */}
-      <div className="bg-gradient-to-r from-slate-50 to-sky-50/60 border border-slate-200 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono text-slate-600 shadow-xs">
+      <div className="bg-gradient-to-r from-slate-900/90 via-slate-900/80 to-cyan-950/70 border border-slate-700/80 rounded-xl p-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono text-slate-300 shadow-md">
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>
-            <strong className="text-slate-800">CSV Export Verification:</strong> RFC 4180 Standard • UTF-8 BOM Included • Strict Synchronous Δt = 0 ms Pairing • 0 Missing / Null Values
+            <strong className="text-white">CSV Export Verification:</strong> RFC 4180 Standard • UTF-8 BOM Included • Strict Synchronous Δt = 0 ms Pairing • 0 Missing / Null Values
           </span>
         </div>
-        <div className="text-[11px] text-slate-500 font-bold shrink-0">
+        <div className="text-[11px] text-cyan-300 font-bold shrink-0">
           Format: Scientific 34-Column Matrix
         </div>
       </div>

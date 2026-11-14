@@ -124,33 +124,33 @@ export default function RealtimeECGCanvas() {
   }, [hr]);
 
   return (
-    <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-sm backdrop-blur-sm relative z-20">
+    <div className="galaxy-glass-card rounded-2xl p-4 sm:p-5 shadow-2xl relative z-20">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-sky-100 text-sky-700">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.2)]">
             <Activity className="w-4 h-4" />
           </div>
-          <span className="font-mono text-xs sm:text-sm font-bold text-slate-800 tracking-wider uppercase">
+          <span className="font-mono text-xs sm:text-sm font-extrabold text-white tracking-wider uppercase">
             Lead II Optical PPG / Plethysmograph Waveform (Continuous)
           </span>
         </div>
-        <div className="font-mono text-xs text-slate-500 flex items-center gap-3">
-          <span>Speed: <strong className="text-slate-800">25 mm/s</strong></span>
-          <span>Gain: <strong className="text-slate-800">10 mm/mV</strong></span>
-          <span className="text-sky-700 font-extrabold bg-sky-50 px-2 py-0.5 rounded border border-sky-200">
+        <div className="font-mono text-xs text-slate-400 flex items-center gap-3">
+          <span>Speed: <strong className="text-slate-200">25 mm/s</strong></span>
+          <span>Gain: <strong className="text-slate-200">10 mm/mV</strong></span>
+          <span className="text-cyan-300 font-black bg-cyan-950/80 px-2.5 py-0.5 rounded border border-cyan-500/50 shadow-[0_0_8px_rgba(0,240,255,0.3)]">
             {hr} BPM
           </span>
         </div>
       </div>
 
-      <div className="w-full h-36 rounded-xl overflow-hidden border border-slate-300 relative shadow-inner">
+      <div className="w-full h-36 rounded-xl overflow-hidden border border-cyan-500/30 relative shadow-inner">
         <canvas
           ref={canvasRef}
           width={800}
           height={144}
           className="w-full h-full block"
         />
-        <div className="absolute top-2 left-3 font-mono text-[10px] text-cyan-300 bg-black/60 px-2 py-0.5 rounded border border-cyan-500/30 pointer-events-none">
+        <div className="absolute top-2 left-3 font-mono text-[10px] text-cyan-300 bg-black/80 px-2 py-0.5 rounded border border-cyan-500/40 pointer-events-none shadow-[0_0_8px_rgba(0,240,255,0.2)]">
           ELEVATE 5 PPG • REALTIME 60FPS
         </div>
       </div>

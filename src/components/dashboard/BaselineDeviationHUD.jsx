@@ -13,54 +13,54 @@ export default function BaselineDeviationHUD() {
     return (
       <div className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
         isAnomalous 
-          ? 'bg-rose-50 border-rose-300 shadow-sm' 
-          : 'bg-white border-slate-200'
+          ? 'bg-rose-950/40 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.25)]' 
+          : 'bg-slate-900/60 border-slate-700/60 hover:border-slate-600'
       }`}>
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-xs font-mono font-bold text-slate-700 uppercase">{label}</span>
+          <span className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">{label}</span>
           <span className={`text-[10px] font-mono font-extrabold px-2 py-0.5 rounded-full ${
             Math.abs(zScore) >= 3.0 
-              ? 'bg-red-100 text-red-800 border border-red-300'
+              ? 'bg-rose-900/80 text-rose-200 border border-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]'
               : Math.abs(zScore) >= 2.0 
-              ? 'bg-amber-100 text-amber-800 border border-amber-300'
-              : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+              ? 'bg-amber-900/80 text-amber-200 border border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
+              : 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/60'
           }`}>
             {zScore >= 0 ? `+${zScore}σ` : `${zScore}σ`}
           </span>
         </div>
 
         <div className="flex items-baseline justify-between my-1">
-          <div className="text-2xl font-black text-slate-900 font-mono">
-            {currentVal} <span className="text-xs font-normal text-slate-500">{unit}</span>
+          <div className="text-2xl font-black text-white font-mono tracking-tight">
+            {currentVal} <span className="text-xs font-normal text-slate-400">{unit}</span>
           </div>
-          <div className={`text-xs font-mono font-bold ${delta >= 0 ? 'text-rose-600' : 'text-sky-600'}`}>
+          <div className={`text-xs font-mono font-bold ${delta >= 0 ? 'text-rose-400' : 'text-cyan-400'}`}>
             {delta >= 0 ? `+${delta}` : delta} {unit}
           </div>
         </div>
 
-        <div className="pt-2 border-t border-slate-200 text-[10px] font-mono text-slate-500 flex justify-between">
-          <span>Personal Baseline:</span>
-          <span className="font-bold text-slate-800">{mean.toFixed(1)} ± {stdDev.toFixed(1)} {unit}</span>
+        <div className="pt-2 border-t border-slate-700/60 text-[10px] font-mono text-slate-400 flex justify-between">
+          <span className="text-slate-400">Baseline Target:</span>
+          <span className="font-bold text-slate-200">{mean.toFixed(1)} ± {stdDev.toFixed(1)} {unit}</span>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-5 shadow-sm backdrop-blur-sm relative z-20">
+    <div className="galaxy-glass-card rounded-2xl p-5 shadow-2xl relative z-20">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-sky-100 text-sky-700">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-lg bg-cyan-950/80 border border-cyan-500/40 text-cyan-400 shadow-[0_0_10px_rgba(0,240,255,0.2)]">
             <UserCheck className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 font-mono uppercase tracking-wide">
-              1. Personalized Anomaly Detection (Learned Baselines)
+            <h3 className="text-sm font-extrabold text-white font-mono uppercase tracking-wide flex items-center gap-2">
+              1. Personalized Anomaly Detection <span className="text-[10px] text-cyan-400 font-normal">($z$-score ML)</span>
             </h3>
-            <p className="text-[11px] text-slate-500 font-medium">
-              Dynamic individual tolerance ($z$-score standardization) replacing static fixed thresholds
+            <p className="text-[11px] text-slate-400 font-medium">
+              Dynamic individual baseline tolerance replacing static population thresholds
             </p>
           </div>
         </div>
@@ -68,10 +68,10 @@ export default function BaselineDeviationHUD() {
         <div className="flex items-center gap-2">
           <span className={`text-xs font-mono font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${
             isPersonalizedAnomaly
-              ? 'bg-rose-50 text-rose-800 border-rose-300 shadow-xs animate-pulse'
-              : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+              ? 'bg-rose-950/80 text-rose-200 border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse'
+              : 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
           }`}>
-            {isPersonalizedAnomaly ? <ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+            {isPersonalizedAnomaly ? <ShieldAlert className="w-3.5 h-3.5 text-rose-400" /> : <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
             <span>STATUS: {severity}</span>
           </span>
         </div>
@@ -80,10 +80,10 @@ export default function BaselineDeviationHUD() {
       {/* Narrative Alert Banner */}
       <div className={`p-3 rounded-xl border mb-4 text-xs font-mono flex items-center gap-2 ${
         isPersonalizedAnomaly
-          ? 'bg-rose-50/90 border-rose-200 text-rose-900'
-          : 'bg-slate-50 border-slate-200 text-slate-700'
+          ? 'bg-rose-950/60 border-rose-500/40 text-rose-200'
+          : 'bg-slate-900/60 border-slate-700/60 text-slate-300'
       }`}>
-        <span className="font-bold">Clinical Triage:</span>
+        <span className="font-bold text-cyan-400">Clinical Triage:</span>
         <span className="font-medium">{diagnosticNarrative}</span>
       </div>
 

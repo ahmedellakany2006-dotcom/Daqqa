@@ -1,49 +1,55 @@
 import React from 'react';
-import { Watch, Activity, Database, Code2, Info, BrainCircuit } from 'lucide-react';
+import { Watch, Activity, Database, Code2, Info, BrainCircuit, Globe } from 'lucide-react';
 
 export default function Navigation({ activeTab, setActiveTab }) {
   const tabs = [
     {
       id: 'simulator',
       label: 'Garmin Wrist Unit',
+      planet: '🌍 Earth (LEO)',
       sub: 'Connect IQ Emulator & Surveys',
       icon: Watch
     },
     {
       id: 'intelligence',
       label: 'Health Intelligence',
-      sub: 'Personalized AI & CSV Export',
+      planet: '🌕 Lunar Gateway',
+      sub: 'Personalized AI & Exertion',
       icon: BrainCircuit
     },
     {
       id: 'ground',
       label: 'Flight Surgeon Station',
+      planet: '🔴 Mars Transit',
       sub: 'Multi-Crew Biometrics & ECG',
       icon: Activity
     },
     {
       id: 'export',
       label: 'NASA Dual-Export Hub',
+      planet: '🪐 Jupiter Relay',
       sub: 'LSDA vs LSAH Pipeline',
       icon: Database
     },
     {
       id: 'code',
       label: 'Connect IQ Monkey C',
+      planet: '💫 Saturn Plane',
       sub: 'Production SDK Codebase',
       icon: Code2
     },
     {
       id: 'about',
       label: 'Space Apps 2026 Brief',
-      sub: 'Project Scope & Architecture',
+      planet: '✨ Nebula Core',
+      sub: 'Mission Scope & Architecture',
       icon: Info
     }
   ];
 
   return (
-    <nav className="border-b border-slate-200/90 bg-white/90 backdrop-blur-md px-4 lg:px-8 py-2 shadow-sm relative z-30">
-      <div className="max-w-7xl mx-auto flex items-center gap-2 overflow-x-auto no-scrollbar">
+    <nav className="border-b border-slate-800/80 bg-slate-950/85 backdrop-blur-xl px-4 lg:px-8 py-2.5 shadow-2xl relative z-30">
+      <div className="max-w-7xl mx-auto flex items-center gap-2.5 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -53,16 +59,25 @@ export default function Navigation({ activeTab, setActiveTab }) {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-3 px-4 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all whitespace-nowrap ${
                 isActive
-                  ? 'bg-gradient-to-r from-sky-50 to-blue-50 border border-sky-300 text-sky-900 shadow-sm shadow-sky-500/10'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80 border border-transparent'
+                  ? 'bg-gradient-to-r from-cyan-950/90 via-slate-900/90 to-blue-950/90 border border-cyan-500/50 text-cyan-200 shadow-lg shadow-cyan-500/20'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <div className={`p-1.5 rounded-lg ${isActive ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+              <div className={`p-2 rounded-lg transition-all ${
+                isActive 
+                  ? 'bg-cyan-500 text-slate-950 shadow-[0_0_12px_#00F0FF]' 
+                  : 'bg-slate-900 border border-slate-800 text-slate-400'
+              }`}>
                 <Icon className="w-4 h-4" />
               </div>
               <div className="text-left">
-                <div className="font-bold leading-tight">{tab.label}</div>
-                <div className="text-[10px] text-slate-500 font-mono hidden sm:block">{tab.sub}</div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold leading-tight tracking-wide">{tab.label}</span>
+                  <span className="text-[9px] font-mono font-semibold px-1.5 py-0.2 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
+                    {tab.planet}
+                  </span>
+                </div>
+                <div className="text-[10px] text-slate-400 font-mono hidden sm:block mt-0.5">{tab.sub}</div>
               </div>
             </button>
           );

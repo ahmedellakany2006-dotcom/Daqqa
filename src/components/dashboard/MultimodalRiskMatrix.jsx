@@ -9,15 +9,15 @@ export default function MultimodalRiskMatrix() {
   const getSeverityBadge = () => {
     switch (clinicalSeverity) {
       case "CRITICAL":
-        return "bg-red-100 text-red-800 border-red-300 animate-pulse";
+        return "bg-rose-950/90 text-rose-300 border-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.4)] animate-pulse";
       case "HIGH":
-        return "bg-amber-100 text-amber-800 border-amber-300";
+        return "bg-amber-950/90 text-amber-300 border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)]";
       case "MODERATE":
-        return "bg-indigo-100 text-indigo-800 border-indigo-300";
+        return "bg-indigo-950/90 text-indigo-300 border-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.3)]";
       case "MONITORED":
-        return "bg-sky-100 text-sky-800 border-sky-300";
+        return "bg-cyan-950/90 text-cyan-300 border-cyan-500/60 shadow-[0_0_10px_rgba(0,240,255,0.2)]";
       default:
-        return "bg-emerald-100 text-emerald-800 border-emerald-300";
+        return "bg-emerald-950/90 text-emerald-300 border-emerald-500/60 shadow-[0_0_10px_rgba(16,185,129,0.2)]";
     }
   };
 
@@ -26,20 +26,20 @@ export default function MultimodalRiskMatrix() {
     const isHigh = value >= 60;
 
     return (
-      <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-xs">
-        <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-700 mb-1">
+      <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-700/60 shadow-lg">
+        <div className="flex items-center justify-between text-xs font-mono font-bold text-slate-300 mb-1">
           <span className="flex items-center gap-1.5">
-            <Icon className="w-3.5 h-3.5 text-slate-500" />
+            <Icon className="w-3.5 h-3.5 text-cyan-400" />
             <span>{label}</span>
           </span>
-          <span className={isHigh ? 'text-rose-600 font-extrabold' : 'text-slate-800'}>
+          <span className={isHigh ? 'text-rose-400 font-extrabold' : 'text-slate-200'}>
             {value}/100
           </span>
         </div>
-        <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden mt-1.5">
+        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-1.5">
           <div 
             className={`h-full ${
-              value >= 75 ? 'bg-red-500' : value >= 50 ? 'bg-amber-500' : 'bg-sky-500'
+              value >= 75 ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]' : value >= 50 ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-cyan-400 shadow-[0_0_8px_#00F0FF]'
             }`} 
             style={{ width: `${value}%` }} 
           />
@@ -49,19 +49,19 @@ export default function MultimodalRiskMatrix() {
   };
 
   return (
-    <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-5 shadow-sm backdrop-blur-sm relative z-20">
+    <div className="galaxy-glass-card rounded-2xl p-5 shadow-2xl relative z-20">
       
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
-        <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-100 text-indigo-700">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-lg bg-indigo-950/80 border border-indigo-500/40 text-indigo-400 shadow-[0_0_10px_rgba(99,102,241,0.2)]">
             <Network className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-slate-900 font-mono uppercase tracking-wide">
-              3. Multimodal Risk Assessment (Cross-Correlation)
+            <h3 className="text-sm font-extrabold text-white font-mono uppercase tracking-wide flex items-center gap-2">
+              3. Multimodal Risk Assessment <span className="text-[10px] text-indigo-400 font-normal">(Cross-Correlation)</span>
             </h3>
-            <p className="text-[11px] text-slate-500 font-medium">
+            <p className="text-[11px] text-slate-400 font-medium">
               Investigates synchronous co-occurrence of changes across physiological & behavioral indicators
             </p>
           </div>
@@ -76,37 +76,37 @@ export default function MultimodalRiskMatrix() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
         
         {/* Left Column: Composite Multimodal Score & Syndrome */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-slate-50 to-indigo-50/40 p-4 rounded-xl border border-slate-200 flex flex-col justify-between shadow-xs">
+        <div className="lg:col-span-5 bg-gradient-to-br from-slate-900/90 to-indigo-950/40 p-4 rounded-xl border border-slate-700/70 flex flex-col justify-between shadow-lg">
           <div>
             <div className="flex justify-between items-start">
-              <span className="text-[10px] font-mono uppercase font-bold text-slate-500">
+              <span className="text-[10px] font-mono uppercase font-bold text-slate-400 tracking-wider">
                 Multimodal Risk Score (MMRS)
               </span>
-              <span className="text-[10px] font-mono text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded font-bold">
+              <span className="text-[10px] font-mono text-cyan-300 bg-cyan-950/80 border border-cyan-500/40 px-2 py-0.5 rounded font-bold shadow-[0_0_6px_rgba(0,240,255,0.2)]">
                 {elevatedModalitiesCount} Co-Occurring Strains
               </span>
             </div>
 
             <div className="flex items-baseline gap-2 my-2">
-              <span className="text-4xl font-black font-mono text-slate-900">
+              <span className="text-4xl font-black font-mono text-white tracking-tight">
                 {mmrs}
               </span>
-              <span className="text-sm font-mono text-slate-500 font-medium">/ 100</span>
+              <span className="text-sm font-mono text-slate-400 font-medium">/ 100</span>
             </div>
 
-            <div className="mt-1 pt-2 border-t border-slate-200">
-              <span className="text-[10px] font-mono text-slate-500 uppercase font-semibold block">Syndromic Pattern Diagnosis:</span>
-              <div className="text-sm font-bold text-indigo-900 font-mono mt-0.5">
+            <div className="mt-1 pt-2 border-t border-slate-800">
+              <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold block">Syndromic Pattern Diagnosis:</span>
+              <div className="text-sm font-bold text-cyan-300 font-mono mt-0.5 tracking-wide">
                 {syndromeLabel}
               </div>
             </div>
           </div>
 
-          <div className="mt-3 pt-2 border-t border-slate-200/80 text-[11px] font-mono text-slate-600 space-y-1">
-            <div className="font-bold text-slate-800">Flight Surgeon Action Protocol:</div>
+          <div className="mt-3 pt-2 border-t border-slate-800/80 text-[11px] font-mono text-slate-300 space-y-1">
+            <div className="font-bold text-white uppercase text-[10px] tracking-wider">Flight Surgeon Action Protocol:</div>
             {recommendations.slice(0, 2).map((rec, i) => (
-              <div key={i} className="flex items-start gap-1.5 text-[10px] text-slate-700">
-                <span className="text-indigo-600 font-bold">•</span>
+              <div key={i} className="flex items-start gap-1.5 text-[10px] text-slate-300">
+                <span className="text-cyan-400 font-bold">•</span>
                 <span>{rec}</span>
               </div>
             ))}

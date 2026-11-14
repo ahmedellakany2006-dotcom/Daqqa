@@ -3,7 +3,7 @@ import { MissionProvider } from './context/MissionContext';
 import Header from './components/layout/Header';
 import Navigation from './components/layout/Navigation';
 import ScenarioControls from './components/layout/ScenarioControls';
-import RocketBackground from './components/layout/RocketBackground';
+import GalaxyBackground from './components/layout/GalaxyBackground';
 import GarminWatchFrame from './components/watch/GarminWatchFrame';
 import RealtimeECGCanvas from './components/telemetry/RealtimeECGCanvas';
 import CrewRoster from './components/telemetry/CrewRoster';
@@ -14,16 +14,16 @@ import DualExportHub from './components/export/DualExportHub';
 import CodeViewer from './components/monkeyc/CodeViewer';
 import ProjectBrief from './components/about/ProjectBrief';
 import AstronautHealthDashboard from './components/dashboard/AstronautHealthDashboard';
-import { Activity, Watch, ShieldAlert, HeartHandshake, Rocket, BrainCircuit } from 'lucide-react';
+import { Activity, Watch, ShieldAlert, HeartHandshake, Rocket, BrainCircuit, Sparkles } from 'lucide-react';
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState('simulator'); // 'simulator' | 'intelligence' | 'ground' | 'export' | 'code' | 'about'
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-800 aerospace-light-grid relative">
+    <div className="min-h-screen flex flex-col bg-[#030712] text-slate-100 galaxy-deep-space relative selection:bg-cyan-500 selection:text-black">
       
-      {/* Background Aerospace Rockets & Orbital Trajectories */}
-      <RocketBackground />
+      {/* Background Cosmic Galaxy & Scroll-Responsive Planetary Systems */}
+      <GalaxyBackground activeTab={activeTab} />
 
       {/* Top Header */}
       <Header />
@@ -41,19 +41,19 @@ function AppContent() {
         {activeTab === 'simulator' && (
           <div className="space-y-8">
             
-            {/* BIGGER SMARTWATCH PROMINENTLY IN THE MIDDLE OF THE SCREEN */}
-            <section className="bg-white/90 border border-slate-200/90 rounded-3xl p-6 sm:p-10 shadow-sm backdrop-blur-md flex flex-col items-center justify-center text-center relative overflow-hidden">
+            {/* BIGGER SMARTWATCH PROMINENTLY IN THE MIDDLE OF THE SCREEN OVER PLANETARY HORIZON */}
+            <section className="galaxy-glass-card rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-xl flex flex-col items-center justify-center text-center relative overflow-hidden border border-slate-700/70">
               
               {/* Header Label */}
               <div className="mb-4">
-                <span className="text-xs font-mono font-extrabold text-sky-800 bg-sky-100 px-3.5 py-1.5 rounded-full border border-sky-300 uppercase tracking-wider inline-flex items-center gap-1.5 shadow-xs">
-                  <Rocket className="w-3.5 h-3.5 text-sky-700" />
-                  <span>Astronaut Wearable Hardware Unit</span>
+                <span className="text-xs font-mono font-extrabold text-cyan-300 bg-cyan-950/80 px-3.5 py-1.5 rounded-full border border-cyan-500/40 uppercase tracking-wider inline-flex items-center gap-1.5 shadow-sm shadow-cyan-500/20">
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Astronaut Wearable Hardware Unit • Orbit Station LEO</span>
                 </span>
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 font-mono mt-2">
+                <h2 className="text-xl sm:text-2xl font-black text-white font-mono mt-2 drop-shadow-md">
                   Garmin tactix 7 / fenix 7 Spaceflight Edition
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto mt-1 font-medium">
+                <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto mt-1 font-medium">
                   Connect IQ System 7 • Interactive 5-Button Tactical Interface with Autonomous Blackout Alarms & Task UI
                 </p>
               </div>
@@ -67,11 +67,12 @@ function AppContent() {
             <section className="space-y-6">
               
               <div className="flex items-center gap-2 pt-2">
-                <div className="h-0.5 flex-1 bg-slate-200" />
-                <span className="text-xs font-mono font-extrabold text-slate-500 uppercase tracking-widest px-3">
-                  Astronaut Health Intelligence & Telemetry Dashboard
+                <div className="h-0.5 flex-1 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
+                <span className="text-xs font-mono font-extrabold text-cyan-400 uppercase tracking-widest px-3 flex items-center gap-1.5">
+                  <Rocket className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>Astronaut Health Intelligence & Telemetry Dashboard</span>
                 </span>
-                <div className="h-0.5 flex-1 bg-slate-200" />
+                <div className="h-0.5 flex-1 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
               </div>
 
               {/* 5 Core Features: Personalized Baselines, SQI, Multimodal Risk, Trend Forecast & CSV Export */}
@@ -133,19 +134,19 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/90 bg-white/95 py-6 px-4 text-center text-xs font-mono text-slate-500 relative z-10 shadow-xs">
+      <footer className="border-t border-slate-800/80 bg-slate-950/90 backdrop-blur-md py-6 px-4 text-center text-xs font-mono text-slate-400 relative z-10 shadow-2xl">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-sky-700 font-extrabold">DAQQA (دقة)</span>
+            <span className="text-cyan-400 font-extrabold tracking-wider">DAQQA (دِقَّة)</span>
             <span>•</span>
-            <span className="text-slate-800 font-semibold">2026 NASA Space Apps Challenge</span>
+            <span className="text-slate-200 font-semibold">2026 NASA Space Apps Challenge</span>
             <span>•</span>
-            <span className="text-sky-800 font-bold bg-sky-100 px-2 py-0.5 rounded border border-sky-200">
+            <span className="text-cyan-300 font-bold bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/30">
               Healthcare Track
             </span>
           </div>
-          <div className="text-[11px] text-slate-500 font-medium">
-            Garmin Connect IQ • Monkey C 4.2+ • NASA LSDA & LSAH Dual Integration Architecture
+          <div className="text-[11px] text-slate-400 font-medium">
+            Garmin Connect IQ System 7 • Monkey C 4.2+ • NASA LSDA & LSAH Galaxy Architecture
           </div>
         </div>
       </footer>

@@ -38,45 +38,45 @@ export default function HRActivityConcordanceHUD() {
   const expectedY = mapHRToY(expectedHR);
 
   return (
-    <div className="bg-white/95 border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-sm backdrop-blur-sm relative z-20 space-y-6">
+    <div className="galaxy-glass-card border border-slate-700/60 rounded-2xl p-5 sm:p-6 shadow-2xl backdrop-blur-xl relative z-20 space-y-6">
       
       {/* 1. Header with Synchronous Badge */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-mono font-bold border border-indigo-300">
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-950/80 text-cyan-300 font-mono font-bold border border-cyan-500/40">
               FEATURE 1 & 2 • SYNCHRONOUS PAIRING
             </span>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-bold border border-emerald-300 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 font-mono font-bold border border-emerald-500/40 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>CO-REGISTERED Δt = 0 ms</span>
             </span>
           </div>
-          <h3 className="text-lg sm:text-xl font-black text-slate-900 font-mono">
+          <h3 className="text-lg sm:text-xl font-black text-white font-mono">
             Cardiorespiratory Exertion & HR vs. Activity Concordance
           </h3>
-          <p className="text-xs sm:text-sm text-slate-600 mt-0.5 font-medium">
+          <p className="text-xs sm:text-sm text-slate-300 mt-0.5 font-medium">
             Simultaneous optical Pulse Ox (SpO2) and PPG (HR) synchronization with dynamic METs workload coupling
           </p>
         </div>
 
         {/* Global Concordance Status Pill */}
-        <div className={`px-3.5 py-2 rounded-xl border font-mono text-xs font-bold flex items-center gap-2 shadow-xs ${
+        <div className={`px-3.5 py-2 rounded-xl border font-mono text-xs font-bold flex items-center gap-2 shadow-lg ${
           isUncoupled
-            ? 'bg-rose-50 border-rose-300 text-rose-800 animate-pulse'
+            ? 'bg-rose-950/90 border-rose-500/60 text-rose-300 animate-pulse'
             : isStrainDrift
-            ? 'bg-amber-50 border-amber-300 text-amber-800'
-            : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+            ? 'bg-amber-950/90 border-amber-500/60 text-amber-300'
+            : 'bg-emerald-950/90 border-emerald-500/60 text-emerald-300'
         }`}>
           {isUncoupled ? (
-            <ShieldAlert className="w-4 h-4 text-rose-600" />
+            <ShieldAlert className="w-4 h-4 text-rose-400" />
           ) : isStrainDrift ? (
-            <AlertTriangle className="w-4 h-4 text-amber-600" />
+            <AlertTriangle className="w-4 h-4 text-amber-400" />
           ) : (
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           )}
           <div>
-            <div className="text-[10px] text-slate-500 uppercase">COUPLING STATUS</div>
+            <div className="text-[10px] text-slate-400 uppercase">COUPLING STATUS</div>
             <div>{metrics.concordanceStatus || "CONCORDANT"}</div>
           </div>
         </div>
@@ -86,123 +86,123 @@ export default function HRActivityConcordanceHUD() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1: Synchronous SpO2 & HR at Same Moment */}
-        <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="bg-slate-900/80 border border-slate-700/70 rounded-xl p-4 flex flex-col justify-between shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold text-slate-600 uppercase flex items-center gap-1.5">
-              <Wind className="w-3.5 h-3.5 text-cyan-600" />
+            <span className="text-xs font-mono font-bold text-slate-300 uppercase flex items-center gap-1.5">
+              <Wind className="w-3.5 h-3.5 text-cyan-400" />
               <span>SpO2 & HR (Synced)</span>
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-100 text-cyan-800 font-bold border border-cyan-200">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 font-bold border border-cyan-500/40">
               1:1 Sync
             </span>
           </div>
           
           <div className="flex items-baseline justify-between my-1">
             <div>
-              <div className="text-2xl font-black text-slate-900 font-mono">
-                {currentHR} <span className="text-xs text-slate-500 font-medium">BPM</span>
+              <div className="text-2xl font-black text-white font-mono">
+                {currentHR} <span className="text-xs text-slate-400 font-medium">BPM</span>
               </div>
-              <div className="text-[11px] text-slate-500 font-mono">Heart Rate</div>
+              <div className="text-[11px] text-slate-400 font-mono">Heart Rate</div>
             </div>
             <div className="text-right">
-              <div className={`text-2xl font-black font-mono ${currentSpO2 < 90 ? 'text-rose-600 animate-pulse' : 'text-cyan-700'}`}>
+              <div className={`text-2xl font-black font-mono ${currentSpO2 < 90 ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`}>
                 {currentSpO2}%
               </div>
-              <div className="text-[11px] text-slate-500 font-mono">Pulse Oximetry</div>
+              <div className="text-[11px] text-slate-400 font-mono">Pulse Oximetry</div>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-500">COSI Ratio:</span>
-            <strong className={`font-bold ${Number(cosi) < 1.0 ? 'text-rose-600' : 'text-slate-800'}`}>
+          <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono">
+            <span className="text-slate-400">COSI Ratio:</span>
+            <strong className={`font-bold ${Number(cosi) < 1.0 ? 'text-rose-400' : 'text-cyan-300'}`}>
               {cosi}
             </strong>
           </div>
         </div>
 
         {/* Card 2: Activity Level (METs & Intensity) */}
-        <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="bg-slate-900/80 border border-slate-700/70 rounded-xl p-4 flex flex-col justify-between shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold text-slate-600 uppercase flex items-center gap-1.5">
-              <Activity className="w-3.5 h-3.5 text-sky-600" />
+            <span className="text-xs font-mono font-bold text-slate-300 uppercase flex items-center gap-1.5">
+              <Activity className="w-3.5 h-3.5 text-cyan-400" />
               <span>Activity Level</span>
             </span>
-            <span className={`text-[10px] font-mono px-2 py-0.5 rounded border font-bold ${currentCategory.bgClass}`}>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded border font-bold bg-cyan-950/80 text-cyan-300 border-cyan-500/40">
               {currentCategory.id}
             </span>
           </div>
 
           <div className="my-1">
-            <div className="text-2xl font-black text-sky-800 font-mono">
-              {currentMets} <span className="text-xs text-slate-500 font-medium">METs</span>
+            <div className="text-2xl font-black text-cyan-400 font-mono">
+              {currentMets} <span className="text-xs text-slate-400 font-medium">METs</span>
             </div>
-            <div className="text-xs text-slate-600 font-medium">
+            <div className="text-xs text-slate-300 font-medium">
               {currentCategory.label}
             </div>
           </div>
 
-          <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-1.5">
+          <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1.5">
             <div 
-              className="h-full bg-gradient-to-r from-sky-500 to-indigo-600 transition-all duration-300" 
+              className="h-full bg-gradient-to-r from-cyan-500 to-indigo-500 transition-all duration-300" 
               style={{ width: `${Math.min(100, ((currentMets - 1.0) / 7.5) * 100)}%` }} 
             />
           </div>
         </div>
 
         {/* Card 3: Resting Heart Rate (Baseline vs Measured) */}
-        <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="bg-slate-900/80 border border-slate-700/70 rounded-xl p-4 flex flex-col justify-between shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold text-slate-600 uppercase flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-rose-600" />
+            <span className="text-xs font-mono font-bold text-slate-300 uppercase flex items-center gap-1.5">
+              <Heart className="w-3.5 h-3.5 text-rose-400" />
               <span>Resting HR (RHR)</span>
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-100 text-rose-800 font-bold border border-rose-200">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-950/80 text-rose-300 font-bold border border-rose-500/40">
               Decond. Index
             </span>
           </div>
 
           <div className="my-1">
-            <div className="text-2xl font-black text-slate-900 font-mono flex items-baseline gap-1">
+            <div className="text-2xl font-black text-white font-mono flex items-baseline gap-1">
               <span>{baseRHR}</span>
-              <span className="text-xs text-slate-500 font-medium">BPM base</span>
+              <span className="text-xs text-slate-400 font-medium">BPM base</span>
             </div>
-            <div className="text-xs text-slate-600 font-medium">
-              Elevation: <strong className={`font-mono font-bold ${deltaResting > 15 ? 'text-rose-600' : deltaResting > 5 ? 'text-amber-600' : 'text-slate-800'}`}>
+            <div className="text-xs text-slate-300 font-medium">
+              Elevation: <strong className={`font-mono font-bold ${deltaResting > 15 ? 'text-rose-400' : deltaResting > 5 ? 'text-amber-400' : 'text-emerald-400'}`}>
                 {deltaResting >= 0 ? `+${deltaResting}` : deltaResting} BPM
               </strong>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-500">Max Reserve:</span>
-            <strong className="text-slate-800">{185 - baseRHR} BPM</strong>
+          <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono">
+            <span className="text-slate-400">Max Reserve:</span>
+            <strong className="text-slate-200">{185 - baseRHR} BPM</strong>
           </div>
         </div>
 
         {/* Card 4: HR vs Activity Coupling Ratio */}
-        <div className="bg-slate-50/90 border border-slate-200 rounded-xl p-4 flex flex-col justify-between shadow-xs">
+        <div className="bg-slate-900/80 border border-slate-700/70 rounded-xl p-4 flex flex-col justify-between shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono font-bold text-slate-600 uppercase flex items-center gap-1.5">
-              <Flame className="w-3.5 h-3.5 text-amber-600" />
+            <span className="text-xs font-mono font-bold text-slate-300 uppercase flex items-center gap-1.5">
+              <Flame className="w-3.5 h-3.5 text-amber-400" />
               <span>HR vs Activity</span>
             </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-bold border border-amber-200">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950/80 text-amber-300 font-bold border border-amber-500/40">
               ESR {esr}x
             </span>
           </div>
 
           <div className="my-1">
-            <div className="text-2xl font-black text-slate-900 font-mono">
-              {currentHR} / {expectedHR} <span className="text-xs text-slate-500 font-medium">exp</span>
+            <div className="text-2xl font-black text-white font-mono">
+              {currentHR} / {expectedHR} <span className="text-xs text-slate-400 font-medium">exp</span>
             </div>
-            <div className="text-xs text-slate-600 font-medium">
-              Strain Concordance: <strong className={isUncoupled ? 'text-rose-600' : 'text-emerald-700'}>{esr}x</strong>
+            <div className="text-xs text-slate-300 font-medium">
+              Strain Concordance: <strong className={isUncoupled ? 'text-rose-400' : 'text-emerald-400'}>{esr}x</strong>
             </div>
           </div>
 
-          <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-[11px] font-mono">
-            <span className="text-slate-500">Expected HR:</span>
-            <strong className="text-slate-800">{expectedHR} BPM</strong>
+          <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono">
+            <span className="text-slate-400">Expected HR:</span>
+            <strong className="text-slate-200">{expectedHR} BPM</strong>
           </div>
         </div>
 
@@ -328,19 +328,19 @@ export default function HRActivityConcordanceHUD() {
       </div>
 
       {/* 4. Interactive Activity Simulator Selector */}
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+      <div className="bg-slate-900/60 border border-slate-700/60 rounded-xl p-4 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-600" />
-            <span className="text-xs font-mono font-bold text-slate-800 uppercase">
+            <Zap className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-mono font-bold text-slate-200 uppercase tracking-wider">
               Flight Surgeon Workload Override (Test Activity Responses)
             </span>
           </div>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-400 font-mono">
             {manualMetsOverride !== null ? (
-              <span className="text-amber-700 font-bold">Manual METs Active: {manualMetsOverride}</span>
+              <span className="text-amber-400 font-bold">Manual METs Active: {manualMetsOverride}</span>
             ) : (
-              <span>Automated Scenario Mode</span>
+              <span className="text-slate-400">Automated Scenario Mode</span>
             )}
           </span>
         </div>
@@ -350,8 +350,8 @@ export default function HRActivityConcordanceHUD() {
             onClick={() => setManualMetsOverride(1.1)}
             className={`px-3 py-2 rounded-lg text-xs font-mono font-bold border transition-all ${
               manualMetsOverride === 1.1
-                ? 'bg-slate-700 text-white border-slate-900 shadow-sm'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                ? 'bg-slate-700/90 text-white border-cyan-500/80 shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                : 'bg-slate-800/60 text-slate-300 border-slate-700/70 hover:bg-slate-700/60 hover:text-white'
             }`}
           >
             💤 Rest (1.1 METs)
@@ -361,8 +361,8 @@ export default function HRActivityConcordanceHUD() {
             onClick={() => setManualMetsOverride(2.1)}
             className={`px-3 py-2 rounded-lg text-xs font-mono font-bold border transition-all ${
               manualMetsOverride === 2.1
-                ? 'bg-sky-600 text-white border-sky-800 shadow-sm'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                ? 'bg-sky-600/90 text-white border-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.4)]'
+                : 'bg-slate-800/60 text-slate-300 border-slate-700/70 hover:bg-slate-700/60 hover:text-white'
             }`}
           >
             🛰️ Light IVA (2.1 METs)
@@ -372,8 +372,8 @@ export default function HRActivityConcordanceHUD() {
             onClick={() => setManualMetsOverride(4.2)}
             className={`px-3 py-2 rounded-lg text-xs font-mono font-bold border transition-all ${
               manualMetsOverride === 4.2
-                ? 'bg-amber-600 text-white border-amber-800 shadow-sm'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                ? 'bg-amber-600/90 text-white border-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.4)]'
+                : 'bg-slate-800/60 text-slate-300 border-slate-700/70 hover:bg-slate-700/60 hover:text-white'
             }`}
           >
             📦 Moderate (4.2 METs)
@@ -383,8 +383,8 @@ export default function HRActivityConcordanceHUD() {
             onClick={() => setManualMetsOverride(7.4)}
             className={`px-3 py-2 rounded-lg text-xs font-mono font-bold border transition-all ${
               manualMetsOverride === 7.4
-                ? 'bg-rose-600 text-white border-rose-800 shadow-sm'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                ? 'bg-rose-600/90 text-white border-rose-400 shadow-[0_0_10px_rgba(244,63,94,0.4)]'
+                : 'bg-slate-800/60 text-slate-300 border-slate-700/70 hover:bg-slate-700/60 hover:text-white'
             }`}
           >
             🚀 EVA Workout (7.4 METs)
@@ -394,8 +394,8 @@ export default function HRActivityConcordanceHUD() {
             onClick={() => setManualMetsOverride(null)}
             className={`col-span-2 sm:col-span-1 px-3 py-2 rounded-lg text-xs font-mono font-bold border transition-all ${
               manualMetsOverride === null
-                ? 'bg-emerald-600 text-white border-emerald-800 shadow-sm'
-                : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                ? 'bg-emerald-600/90 text-white border-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.4)]'
+                : 'bg-slate-800/60 text-slate-300 border-slate-700/70 hover:bg-slate-700/60 hover:text-white'
             }`}
           >
             🔄 Scenario Auto
