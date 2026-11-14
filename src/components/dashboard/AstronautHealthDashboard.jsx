@@ -97,15 +97,26 @@ export default function AstronautHealthDashboard() {
             )}
           </button>
 
-          {/* 3. Pre-Compiled NASA PDF Specification */}
+          {/* 3. Pre-Compiled NASA Technical Specification PDF */}
           <a
             href="/DAQQA_NASA_Telemetry_Specification_and_Thresholds.pdf"
             download="DAQQA_NASA_Telemetry_Specification_and_Thresholds.pdf"
-            className="px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all"
+            className="px-3 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-red-700 hover:from-rose-500 hover:to-red-600 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-rose-600/20 active:scale-95 transition-all"
             title="Download the official NASA Technical Specification & Thresholds PDF document"
           >
             <FileText className="w-4 h-4 text-rose-200" />
-            <span>PDF Spec</span>
+            <span>Tech Spec</span>
+          </a>
+
+          {/* 4. Complete System Features Specification PDF */}
+          <a
+            href="/DAQQA_System_Features_Specification.pdf"
+            download="DAQQA_System_Features_Specification.pdf"
+            className="px-3 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-500 hover:to-indigo-600 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-purple-600/20 active:scale-95 transition-all"
+            title="Download the Complete DAQQA System Features & Architectural Specification PDF"
+          >
+            <Sparkles className="w-4 h-4 text-purple-200" />
+            <span>Features PDF</span>
           </a>
 
           {/* 4. Live Patient Clinical Dossier (PDF Print) */}
