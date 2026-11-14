@@ -12,9 +12,9 @@ export default function Navigation({ activeTab, setActiveTab }) {
     },
     {
       id: 'intelligence',
-      label: 'Health Intelligence',
+      label: 'NASA Predictive ML AI',
       planet: '🌕 Lunar Gateway',
-      sub: 'Personalized AI & Exertion',
+      sub: '3-Day Early Warning & HRP Diagnostics',
       icon: BrainCircuit
     },
     {

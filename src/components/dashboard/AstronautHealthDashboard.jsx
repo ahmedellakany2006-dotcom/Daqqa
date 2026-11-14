@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { useMission } from '../../context/MissionContext';
+import NasaPredictiveMLHUD from './NasaPredictiveMLHUD';
 import HRActivityConcordanceHUD from './HRActivityConcordanceHUD';
 import BaselineDeviationHUD from './BaselineDeviationHUD';
 import SensorReliabilityMonitor from './SensorReliabilityMonitor';
 import MultimodalRiskMatrix from './MultimodalRiskMatrix';
-import PredictiveTrendForecast from './PredictiveTrendForecast';
 import { openPrintableClinicalReport } from '../../utils/pdfReportGenerator';
 import { Download, Check, FileSpreadsheet, ShieldAlert, Sparkles, Activity, FileText, CheckCircle2 } from 'lucide-react';
 
@@ -144,7 +144,10 @@ export default function AstronautHealthDashboard() {
         </div>
       </div>
 
-      {/* NEW FEATURES 1, 2, 3, 4, 5: HR vs Activity, SpO2 & HR Synchronous Co-Registration, METs, Resting HR */}
+      {/* Core Machine Learning: NASA HRP 3-Day Risk Horizon & Hazard Detector */}
+      <NasaPredictiveMLHUD />
+
+      {/* Cardiorespiratory Concordance: HR vs Activity, SpO2 & HR Synchronous Co-Registration */}
       <HRActivityConcordanceHUD />
 
       {/* Feature 1: Personalized Anomaly Detection (z-Scores) */}
@@ -155,9 +158,6 @@ export default function AstronautHealthDashboard() {
 
       {/* Feature 3: Multimodal Risk Assessment Fusion */}
       <MultimodalRiskMatrix />
-
-      {/* Feature 4: Health Trend Prediction (Time-Series ML) */}
-      <PredictiveTrendForecast />
 
     </div>
   );

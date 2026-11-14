@@ -63,38 +63,6 @@ function AppContent() {
 
             </section>
 
-            {/* DASHBOARD DIRECTLY UNDER THE SMARTWATCH */}
-            <section className="space-y-6">
-              
-              <div className="flex items-center gap-2 pt-2">
-                <div className="h-0.5 flex-1 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
-                <span className="text-xs font-mono font-extrabold text-cyan-400 uppercase tracking-widest px-3 flex items-center gap-1.5">
-                  <Rocket className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Astronaut Health Intelligence & Telemetry Dashboard</span>
-                </span>
-                <div className="h-0.5 flex-1 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
-              </div>
-
-              {/* 5 Core Features: Personalized Baselines, SQI, Multimodal Risk, Trend Forecast & CSV Export */}
-              <AstronautHealthDashboard />
-
-              {/* 1. Real-time Lead II ECG Canvas */}
-              <RealtimeECGCanvas />
-
-              {/* 2. Multi-Channel Continuous Telemetry Charts (HR, SpO2, HRV, Stress) */}
-              <BiometricCharts />
-
-              {/* 3. Anomaly Detector & Environmental Status */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <AnomalyDetector />
-                <EnvironmentalHUD />
-              </div>
-
-              {/* 4. Active Crew Biometric Roster */}
-              <CrewRoster />
-
-            </section>
-
           </div>
         )}
 
