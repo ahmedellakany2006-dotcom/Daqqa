@@ -1,94 +1,112 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Compass, Globe, Sparkles, Orbit, Radio, Camera } from 'lucide-react';
+import { Compass, Globe, Sparkles, Orbit, Radio, Camera, ChevronUp, ChevronDown, CheckCircle2, RotateCcw } from 'lucide-react';
 
 export const CELESTIAL_DESTINATIONS = {
   simulator: {
     id: "EARTH",
+    tabKey: "simulator",
     name: "Planet Earth & Low Earth Orbit",
     subtitle: "ISS Orbit Track • Altitude 408 km",
     image: "/planets/earth.jpg",
     type: "sphere",
+    beacon: "ISS • 28.5°N",
+    beaconSub: "Alpha Station",
     altitude: "408 km",
     velocity: "27,600 km/h",
     inclination: "51.6°",
     primaryColor: "#0284C7",
     glowColor: "rgba(2, 132, 199, 0.35)",
-    atmosphereColor: "rgba(56, 189, 248, 0.3)",
+    atmosphereColor: "rgba(56, 189, 248, 0.32)",
     tag: "SECTOR 01: LEO ORBITAL STATION",
     citation: "NASA Blue Marble • Suomi NPP Satellite Imagery"
   },
   intelligence: {
     id: "MOON",
+    tabKey: "intelligence",
     name: "The Moon & Lunar Gateway",
     subtitle: "Artemis Halo Orbit • Shackleton Basin",
     image: "/planets/moon.jpg",
     type: "sphere",
+    beacon: "GATEWAY • NRHO",
+    beaconSub: "Artemis Relay",
     altitude: "384,400 km",
     velocity: "3,683 km/h",
     inclination: "5.14°",
     primaryColor: "#94A3B8",
     glowColor: "rgba(148, 163, 184, 0.3)",
-    atmosphereColor: "rgba(241, 245, 249, 0.2)",
+    atmosphereColor: "rgba(241, 245, 249, 0.22)",
     tag: "SECTOR 02: LUNAR GATEWAY ARCHITECTURE",
     citation: "NASA Lunar Reconnaissance Orbiter (LRO)"
   },
   ground: {
     id: "MARS",
+    tabKey: "ground",
     name: "Planet Mars & Deep Space Transit",
     subtitle: "Elysium Planitia • Ares Trajectory",
     image: "/planets/mars.jpg",
     type: "sphere",
+    beacon: "ARES-1 • TRANSIT",
+    beaconSub: "Perseverance Relay",
     altitude: "225,000,000 km",
     velocity: "24,100 km/h",
     inclination: "1.85°",
     primaryColor: "#DC2626",
     glowColor: "rgba(220, 38, 38, 0.35)",
-    atmosphereColor: "rgba(249, 115, 22, 0.25)",
+    atmosphereColor: "rgba(249, 115, 22, 0.26)",
     tag: "SECTOR 03: MARS EXPEDITION TRANSIT",
     citation: "NASA Viking Orbiter Global True-Color Mosaic"
   },
   export: {
     id: "JUPITER",
+    tabKey: "export",
     name: "Jupiter & Europa Relay",
     subtitle: "Jovian Magnetosphere • Deep Space Relay",
     image: "/planets/jupiter.jpg",
     type: "sphere",
+    beacon: "EUROPA • PASS",
+    beaconSub: "Juno Clipper",
     altitude: "628,730,000 km",
     velocity: "47,000 km/h",
     inclination: "1.31°",
     primaryColor: "#D97706",
     glowColor: "rgba(217, 119, 6, 0.35)",
-    atmosphereColor: "rgba(251, 191, 36, 0.25)",
+    atmosphereColor: "rgba(251, 191, 36, 0.26)",
     tag: "SECTOR 04: DEEP PLANETARY TELEMETRY RELAY",
     citation: "NASA Cassini Spacecraft Jovian Flyby"
   },
   code: {
     id: "SATURN",
+    tabKey: "code",
     name: "Saturn & Ring System",
     subtitle: "Cassini Resonances • Ring Plane",
     image: "/planets/saturn.jpg",
     type: "saturn",
+    beacon: "CASSINI • GAP",
+    beaconSub: "Ring Plane Vector",
     altitude: "1,200,000,000 km",
     velocity: "34,800 km/h",
     inclination: "2.49°",
     primaryColor: "#CA8A04",
     glowColor: "rgba(202, 138, 4, 0.35)",
-    atmosphereColor: "rgba(253, 224, 71, 0.22)",
+    atmosphereColor: "rgba(253, 224, 71, 0.24)",
     tag: "SECTOR 05: ORBITAL HARMONICS CODEBASE",
     citation: "NASA Cassini Equinox True-Color Portrait"
   },
   about: {
     id: "NEBULA",
+    tabKey: "about",
     name: "Cosmic Cliffs & Deep Space",
     subtitle: "Carina Nebula • Interstellar Core",
     image: "/planets/nebula.jpg",
     type: "nebula",
+    beacon: "JWST • DEEP FIELD",
+    beaconSub: "NIRCam Target",
     altitude: "7,600 Light Years",
     velocity: "Relativistic Vector",
     inclination: "Galactic Plane",
     primaryColor: "#9333EA",
     glowColor: "rgba(147, 51, 234, 0.35)",
-    atmosphereColor: "rgba(236, 72, 153, 0.22)",
+    atmosphereColor: "rgba(236, 72, 153, 0.24)",
     tag: "SECTOR 06: NASA SPACE APPS GALAXY",
     citation: "NASA James Webb Space Telescope (JWST) NIRCam"
   }
@@ -96,6 +114,9 @@ export const CELESTIAL_DESTINATIONS = {
 
 export default function GalaxyBackground({ activeTab = 'simulator' }) {
   const [smoothY, setSmoothY] = useState(0);
+  const [manualDestinationKey, setManualDestinationKey] = useState(null);
+  const [isOrreryExpanded, setIsOrreryExpanded] = useState(false);
+
   const targetYRef = useRef(0);
   const currentYRef = useRef(0);
 
@@ -124,7 +145,13 @@ export default function GalaxyBackground({ activeTab = 'simulator' }) {
     };
   }, []);
 
-  const activeDestination = CELESTIAL_DESTINATIONS[activeTab] || CELESTIAL_DESTINATIONS.simulator;
+  // When activeTab changes, reset any manual lock to follow the mission navigation seamlessly
+  useEffect(() => {
+    setManualDestinationKey(null);
+  }, [activeTab]);
+
+  const activeKey = manualDestinationKey || (CELESTIAL_DESTINATIONS[activeTab] ? activeTab : 'simulator');
+  const activeDestination = CELESTIAL_DESTINATIONS[activeKey];
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-[#030712]">
@@ -218,8 +245,7 @@ export default function GalaxyBackground({ activeTab = 'simulator' }) {
         className="absolute top-16 right-4 sm:right-12 lg:right-20 w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[460px] lg:h-[460px] pointer-events-none"
         style={{
           transform: `translate3d(0, ${smoothY.toFixed(2)}px, 0)`,
-          willChange: 'transform',
-          transition: 'opacity 0.8s ease-in-out'
+          willChange: 'transform'
         }}
       >
         
@@ -232,85 +258,166 @@ export default function GalaxyBackground({ activeTab = 'simulator' }) {
           }}
         />
 
-        {/* ----------------- SPHERICAL PLANETS (Earth, Moon, Mars, Jupiter) ----------------- */}
-        {activeDestination.type === "sphere" && (
-          <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl transition-all duration-700">
-            {/* Real NASA Mission Photograph */}
-            <img 
-              src={activeDestination.image} 
-              alt={activeDestination.name}
-              className="w-full h-full object-cover rounded-full select-none"
-              loading="eager"
-            />
+        {/* ----------------------------------------------------------------- */}
+        {/* CINEMATIC PLANETARY STACK (Full Cross-Fade Transitions for All 6) */}
+        {/* ----------------------------------------------------------------- */}
+        {Object.entries(CELESTIAL_DESTINATIONS).map(([key, dest]) => {
+          const isCurrent = activeKey === key;
 
-            {/* Authentic 3D Planetary Sphere Shading (Terminator Line & Shadow) */}
-            <div 
-              className="absolute inset-0 rounded-full pointer-events-none"
+          return (
+            <div
+              key={dest.id}
+              className="absolute inset-0 transition-all duration-1000 ease-out pointer-events-none"
               style={{
-                background: 'radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.08) 0%, transparent 45%, rgba(3, 7, 18, 0.65) 75%, rgba(3, 7, 18, 0.96) 98%)'
+                opacity: isCurrent ? 1 : 0,
+                transform: isCurrent ? 'scale(1) rotate(0deg)' : 'scale(0.92) rotate(-3deg)',
+                pointerEvents: 'none'
               }}
-            />
+            >
+              {/* SPHERICAL PLANETS (Earth, Moon, Mars, Jupiter) */}
+              {dest.type === "sphere" && (
+                <div className="relative w-full h-full rounded-full overflow-hidden shadow-2xl">
+                  {/* Real NASA Mission Photograph */}
+                  <img 
+                    src={dest.image} 
+                    alt={dest.name}
+                    className="w-full h-full object-cover rounded-full select-none"
+                    loading="eager"
+                  />
 
-            {/* True Rayleigh Atmospheric Scattering Rim Glow */}
-            <div 
-              className="absolute inset-0 rounded-full pointer-events-none"
-              style={{
-                boxShadow: `inset -20px -20px 48px rgba(3,7,18,0.92), 0 0 55px ${activeDestination.atmosphereColor}`,
-                border: '1px solid rgba(255, 255, 255, 0.08)'
-              }}
-            />
-          </div>
-        )}
+                  {/* Authentic 3D Planetary Sphere Shading (Terminator Line & Shadow) */}
+                  <div 
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    style={{
+                      background: 'radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.08) 0%, transparent 45%, rgba(3, 7, 18, 0.65) 75%, rgba(3, 7, 18, 0.96) 98%)'
+                    }}
+                  />
 
-        {/* ----------------- SATURN & REAL RING SYSTEM (NASA Cassini) ----------------- */}
-        {activeDestination.type === "saturn" && (
-          <div className="relative w-full h-full flex items-center justify-center transition-all duration-700">
-            <div className="relative w-[118%] h-[118%] flex items-center justify-center overflow-hidden rounded-3xl">
-              <img 
-                src={activeDestination.image} 
-                alt="Saturn with Rings"
-                className="w-full h-full object-contain filter drop-shadow-[0_0_50px_rgba(251,191,36,0.35)] select-none"
-                style={{
-                  maskImage: 'radial-gradient(ellipse at center, black 62%, transparent 96%)',
-                  WebkitMaskImage: 'radial-gradient(ellipse at center, black 62%, transparent 96%)'
-                }}
-                loading="eager"
-              />
+                  {/* True Rayleigh Atmospheric Scattering Rim Glow */}
+                  <div 
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    style={{
+                      boxShadow: `inset -20px -20px 48px rgba(3,7,18,0.92), 0 0 55px ${dest.atmosphereColor}`,
+                      border: '1px solid rgba(255, 255, 255, 0.08)'
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* SATURN WITH REAL RINGS (NASA Cassini) */}
+              {dest.type === "saturn" && (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="relative w-[118%] h-[118%] flex items-center justify-center overflow-hidden rounded-3xl">
+                    <img 
+                      src={dest.image} 
+                      alt="Saturn with Rings"
+                      className="w-full h-full object-contain filter drop-shadow-[0_0_50px_rgba(251,191,36,0.35)] select-none"
+                      style={{
+                        maskImage: 'radial-gradient(ellipse at center, black 62%, transparent 96%)',
+                        WebkitMaskImage: 'radial-gradient(ellipse at center, black 62%, transparent 96%)'
+                      }}
+                      loading="eager"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* DEEP SPACE NEBULA (JWST Cosmic Cliffs) */}
+              {dest.type === "nebula" && (
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <div className="relative w-[118%] h-[118%] rounded-3xl overflow-hidden shadow-2xl">
+                    <img 
+                      src={dest.image} 
+                      alt="Carina Nebula Cosmic Cliffs"
+                      className="w-full h-full object-cover filter drop-shadow-[0_0_60px_rgba(147,51,234,0.4)] select-none"
+                      style={{
+                        maskImage: 'radial-gradient(ellipse at center, black 55%, transparent 95%)',
+                        WebkitMaskImage: 'radial-gradient(ellipse at center, black 55%, transparent 95%)'
+                      }}
+                      loading="eager"
+                    />
+                    <div 
+                      className="absolute inset-0 rounded-3xl pointer-events-none"
+                      style={{
+                        background: 'radial-gradient(circle at center, transparent 35%, rgba(3,7,18,0.65) 85%, rgba(3,7,18,0.98) 100%)'
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Orbiting Spacecraft / Mission Beacon Overlay */}
+              <div className="absolute inset-[-18px] rounded-full border border-dashed border-cyan-400/25 pointer-events-none">
+                <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-slate-950/90 border border-cyan-500/50 px-2 py-0.5 rounded-full shadow-[0_0_12px_rgba(0,240,255,0.4)]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                  <span className="font-mono text-[9px] text-cyan-300 font-bold whitespace-nowrap">
+                    {dest.beacon}
+                  </span>
+                </div>
+              </div>
+
             </div>
-          </div>
-        )}
-
-        {/* ----------------- DEEP NEBULA (JWST Cosmic Cliffs) ----------------- */}
-        {activeDestination.type === "nebula" && (
-          <div className="relative w-full h-full flex items-center justify-center transition-all duration-700">
-            <div className="relative w-[118%] h-[118%] rounded-3xl overflow-hidden shadow-2xl">
-              <img 
-                src={activeDestination.image} 
-                alt="Carina Nebula Cosmic Cliffs"
-                className="w-full h-full object-cover filter drop-shadow-[0_0_60px_rgba(147,51,234,0.4)] select-none"
-                style={{
-                  maskImage: 'radial-gradient(ellipse at center, black 55%, transparent 95%)',
-                  WebkitMaskImage: 'radial-gradient(ellipse at center, black 55%, transparent 95%)'
-                }}
-                loading="eager"
-              />
-              <div 
-                className="absolute inset-0 rounded-3xl pointer-events-none"
-                style={{
-                  background: 'radial-gradient(circle at center, transparent 35%, rgba(3,7,18,0.65) 85%, rgba(3,7,18,0.98) 100%)'
-                }}
-              />
-            </div>
-          </div>
-        )}
+          );
+        })}
 
       </div>
 
       {/* ============================================================== */}
-      {/* 5. COSMIC ORBIT TELEMETRY HUD (Floating Celestial Status)       */}
+      {/* 5. COSMIC ORBIT TELEMETRY HUD & ORRERY CONTROLLER               */}
       {/* ============================================================== */}
-      <div className="absolute bottom-4 right-4 sm:right-8 z-30 pointer-events-auto flex items-center gap-2">
-        <div className="bg-slate-900/80 border border-slate-700/60 backdrop-blur-xl rounded-2xl p-2.5 sm:px-4 sm:py-2.5 shadow-2xl flex items-center gap-3 font-mono text-xs">
+      <div className="absolute bottom-4 right-4 sm:right-8 z-30 pointer-events-auto flex flex-col items-end gap-2">
+        
+        {/* Expandable Mini Orrery Planet Selector Drawer */}
+        {isOrreryExpanded && (
+          <div className="galaxy-glass-card rounded-2xl p-3 border border-slate-700/80 shadow-2xl backdrop-blur-2xl mb-1 w-72 sm:w-80 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-700/60">
+              <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-white">
+                <Orbit className="w-3.5 h-3.5 text-cyan-400" />
+                <span>CELESTIAL ORRERY OBSERVER</span>
+              </div>
+              {manualDestinationKey && (
+                <button
+                  onClick={() => setManualDestinationKey(null)}
+                  className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 hover:text-cyan-300 bg-cyan-950/80 px-2 py-0.5 rounded border border-cyan-500/40"
+                  title="Return to auto tab-tracking mode"
+                >
+                  <RotateCcw className="w-2.5 h-2.5" />
+                  <span>Auto Tab</span>
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-1.5">
+              {Object.entries(CELESTIAL_DESTINATIONS).map(([key, dest]) => {
+                const isSelected = activeKey === key;
+                return (
+                  <button
+                    key={dest.id}
+                    onClick={() => setManualDestinationKey(key)}
+                    className={`p-2 rounded-xl border text-left transition-all flex items-center gap-2 font-mono text-[11px] ${
+                      isSelected
+                        ? 'bg-cyan-950/90 border-cyan-400 text-white shadow-[0_0_12px_rgba(0,240,255,0.3)] ring-1 ring-cyan-400'
+                        : 'bg-slate-900/60 border-slate-700/60 text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                    }`}
+                  >
+                    <img 
+                      src={dest.image} 
+                      alt={dest.name} 
+                      className="w-6 h-6 rounded-full object-cover shrink-0 border border-slate-600"
+                    />
+                    <div className="overflow-hidden">
+                      <div className="font-bold truncate text-[10px] leading-tight">{dest.id}</div>
+                      <div className="text-[9px] text-slate-400 truncate">{dest.altitude}</div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Main Floating Celestial Telemetry HUD Pill */}
+        <div className="bg-slate-900/85 border border-slate-700/60 backdrop-blur-2xl rounded-2xl p-2.5 sm:px-4 sm:py-2.5 shadow-2xl flex items-center gap-3 font-mono text-xs">
           <div 
             className="w-2.5 h-2.5 rounded-full animate-ping shrink-0" 
             style={{ backgroundColor: activeDestination.primaryColor }} 
@@ -323,6 +430,11 @@ export default function GalaxyBackground({ activeTab = 'simulator' }) {
               <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-cyan-300 border border-slate-700 font-bold">
                 {activeDestination.id}
               </span>
+              {manualDestinationKey && (
+                <span className="text-[8px] px-1 rounded bg-amber-950/80 text-amber-300 border border-amber-500/40 font-bold">
+                  MANUAL LOCK
+                </span>
+              )}
             </div>
             <div className="text-white font-extrabold text-xs sm:text-sm">
               {activeDestination.name}
@@ -334,10 +446,20 @@ export default function GalaxyBackground({ activeTab = 'simulator' }) {
             </div>
             <div className="text-[9px] text-slate-400 flex items-center gap-1 mt-1 border-t border-slate-800 pt-0.5">
               <Camera className="w-2.5 h-2.5 text-cyan-400" />
-              <span>{activeDestination.citation}</span>
+              <span className="truncate max-w-[210px] sm:max-w-[280px]">{activeDestination.citation}</span>
             </div>
           </div>
+
+          {/* Orrery Drawer Toggle Button */}
+          <button
+            onClick={() => setIsOrreryExpanded(prev => !prev)}
+            className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-all shrink-0 ml-1"
+            title="Toggle Celestial Orrery Selector"
+          >
+            {isOrreryExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+          </button>
         </div>
+
       </div>
 
     </div>

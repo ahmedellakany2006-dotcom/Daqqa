@@ -39,8 +39,9 @@ export default function GarminWatchFrame() {
     <div className="flex flex-col items-center justify-center p-2 select-none w-full max-w-4xl mx-auto">
       
       {/* Astronaut Selector Bar */}
-      <div className="flex flex-wrap items-center justify-center gap-2 mb-6 bg-white/95 p-2 rounded-2xl border border-slate-200/90 shadow-sm backdrop-blur-sm">
-        <span className="text-xs font-mono text-slate-500 px-2 font-bold uppercase tracking-wider">
+      <div className="flex flex-wrap items-center justify-center gap-2 mb-6 galaxy-glass-card p-2.5 rounded-2xl border border-slate-700/60 shadow-xl backdrop-blur-xl">
+        <span className="text-xs font-mono text-cyan-400 px-2 font-bold uppercase tracking-wider flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_#00F0FF] animate-pulse" />
           ASTRONAUT WRIST:
         </span>
         {crew.map((astro) => (
@@ -49,13 +50,13 @@ export default function GarminWatchFrame() {
             onClick={() => setActiveAstronautId(astro.id)}
             className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold transition-all ${
               activeAstronautId === astro.id
-                ? 'bg-sky-500 text-white shadow-md shadow-sky-500/25 ring-2 ring-sky-300 scale-105'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                ? 'bg-cyan-600/90 text-white shadow-[0_0_12px_rgba(0,240,255,0.4)] border border-cyan-400 ring-1 ring-cyan-300 scale-105'
+                : 'bg-slate-900/60 text-slate-300 hover:bg-slate-800/80 hover:text-white border border-slate-700/50'
             }`}
           >
             <span className="text-base">{astro.avatar}</span>
             <span>{astro.name.split(' ')[1]}</span>
-            <span className={`text-[10px] ${activeAstronautId === astro.id ? 'text-sky-100' : 'text-slate-400'}`}>
+            <span className={`text-[10px] ${activeAstronautId === astro.id ? 'text-cyan-200' : 'text-slate-400'}`}>
               ({astro.id})
             </span>
           </button>
@@ -256,22 +257,22 @@ export default function GarminWatchFrame() {
       </div>
 
       {/* Button Operation Guide Footer */}
-      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mt-4 text-xs font-mono text-slate-600 bg-white/95 px-6 py-2.5 rounded-2xl border border-slate-200 shadow-sm">
+      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mt-4 text-xs font-mono text-slate-300 galaxy-glass-card px-6 py-2.5 rounded-2xl border border-slate-700/60 shadow-xl backdrop-blur-xl">
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold shadow-xs">LIGHT</kbd>
-          <span>Glow Screen</span>
+          <kbd className="px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 font-bold shadow-inner text-[10px]">LIGHT</kbd>
+          <span className="text-slate-400">Glow Screen</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold shadow-xs">UP / DOWN</kbd>
-          <span>Switch Mode</span>
+          <kbd className="px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 font-bold shadow-inner text-[10px]">UP / DOWN</kbd>
+          <span className="text-slate-400">Switch Mode</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2.5 py-0.5 rounded bg-rose-600 text-white border border-rose-500 font-extrabold shadow-xs">START</kbd>
-          <span>Behavioral Task UI</span>
+          <kbd className="px-2.5 py-0.5 rounded bg-rose-600/90 text-white border border-rose-500 font-black shadow-[0_0_8px_rgba(244,63,94,0.4)] text-[10px]">START</kbd>
+          <span className="text-rose-300 font-bold">Behavioral Task UI</span>
         </span>
         <span className="flex items-center gap-1.5">
-          <kbd className="px-2 py-0.5 rounded bg-slate-100 text-slate-800 border border-slate-300 font-bold shadow-xs">BACK</kbd>
-          <span>Main HUD</span>
+          <kbd className="px-2 py-0.5 rounded bg-slate-800 text-slate-200 border border-slate-700 font-bold shadow-inner text-[10px]">BACK</kbd>
+          <span className="text-slate-400">Main HUD</span>
         </span>
       </div>
 
